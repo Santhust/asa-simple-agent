@@ -1,0 +1,8 @@
+# asa — core dependencies (kept intentionally tiny; the whole agent runs on stdlib)
+# Tests:
+pytest
+
+# Optional per-milestone, added when reached (NOT installed in M1 — zero-cost path runs with none):
+# google-genai            # M8: GeminiBrain (Google free tier)
+# openai                  # later: OpenAI-compatible bedrock (OpenRouter/Groq/etc.)
+# transformers            # M10: GPT2Brain failure demo (heavy; optional)

@@ -2,7 +2,6 @@
 
 Goal: learn agentic AI by implementing a ReAct-style agent from scratch in Python, with every
 internal observable and an interactive HTML playground. Learning-paced, NOT a product.
-(Originally "asca" = a simple coding agent; deferred as a possible later spin-off.)
 Read the full game plan in `PLAN.md` before starting work; update it as the plan evolves.
 
 ## Architecture (two protocols, one core)

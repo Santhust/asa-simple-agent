@@ -93,6 +93,15 @@ Same stream feeds the narrated CLI and the HTML playground player.
 - [ ] **M12** HTML playground (offline via pre-recorded traces)
 - [ ] **M13** Live mode (serve.py SSE) + README quickstart + final walkthrough
 
+## Publishing to GitHub (decision: option 1 — defer the scrub)
+- Keep `PLAN.md` + `AGENTS.md` tracked and versioned locally for now (revertable history).
+- On the day of the FIRST push, scrub them from history once:
+  `git filter-repo --path PLAN.md --path AGENTS.md --invert-paths`
+  (or `git filter-branch` if filter-repo isn't installed), then add both to `.gitignore`
+  so future edits never leak.
+- Public scope = `asa/`, tests, `docs/`, `playground/`, `README.md` (educational front door).
+- Private scope = `PLAN.md`, `AGENTS.md`, `NOTES.md`.
+
 ## Session continuity (why this file exists)
 - opencode context window ~200K tokens; compaction may mangle earlier discussion.
 - On any new session / drift: re-read AGENTS.md (auto-loaded) + this PLAN.md;

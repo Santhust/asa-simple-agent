@@ -6,7 +6,8 @@ __pycache__/
 venv/
 .pytest_cache/
 
+# Private / personal — never pushed
+NOTES.md
+
 # asa outputs
 out/
-*.jsonl
-traces/

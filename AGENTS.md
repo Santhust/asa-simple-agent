@@ -36,6 +36,21 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
 - Never skip tests; state what each test demonstrates and why it matters.
 - Verbose outputs: explain what is happening, how, and why — all details.
 
+### Working rhythm (user-mandated · addendum 2026-09)
+Learning-paced, never product-paced. Rules that must not be shortcut:
+- Sub-milestones: every milestone is split into concept-based sub-milestones. In ONE step,
+  implement a single concept, explain what/how/why, then STOP — the user reads the
+  generated file(s), we build understanding together, then start the next sub-milestone.
+  Never batch several concepts at once.
+- Commit after EVERY sub-milestone: small, atomic, one-concept commits.
+- The story diagram is a living artifact: refresh `docs/m1-diagram.svg` whenever functionality
+  changes (solid = built, dashed = planned) so every step has a graphical before/after.
+  Rasterize one PNG frame per stage into `out/frames/` (gitignored; rsvg-convert), and stitch
+  the journey with `magick -delay 150 out/frames/*.png journey.gif`. The git history of the
+  SVG is the durable timeline.
+- At milestone close, regenerate `docs/timeline.html` — an offline prev/next slideshow of the
+  frames with one caption per stage (seed of the playground's animated trace player, M12).
+
 ## Commands
 (CANONICAL to be frozen in Milestone 1)
 - `python run.py --task "..." [--brain <name>] [--explain] [--trace out/t.jsonl]`

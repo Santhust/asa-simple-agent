@@ -71,9 +71,8 @@ atomic commit + (for functional steps) an SVG stage + PNG frame in `out/frames/`
 - [x] M2.4  AgentResult(text, terminate_reason, steps, tokens) + tests/test_agent.py (10)
 - [x] M2.5  run.py rewritten agent-driven (+ --max-steps, --script, main(argv)) + tests/test_cli.py
 - [x] M2.5b --script now declares + *reports louder* the MockBrain override (see below)
-- [ ] M2.6  CLOSE-OUT checklist: `python -m pytest` green · PLAN.md flip M2→[x] ·
-           regenerate `docs/timeline.html` over `out/frames/*.png` (caption per stage) ·
-           final SVG pass (badge M2 done) · one narrated `--explain` run · final commit
+- [x] M2.6  close-out — pytest 26 green · PLAN.md M2→[x] · docs/timeline.html (5 stages,
+           self-contained) · SVG badge "M2 complete ✓" · one narrated `--explain` run · journey.gif
 Recorded decisions:
 - **AgentResult**: run() returns answer AND outcome, kept apart (status bookkeeping never
   pollutes model text). M2 always reports terminate_reason="max_steps"; M5 adds
@@ -84,7 +83,8 @@ Recorded decisions:
   revisit only if a silent misuse actually bites.
 - **CLI narration voice**: the Agent narrates its own mid-run internals; run.py adds only
   gauges + the result block (no duplicated transcript).
-Session-start anchors: git HEAD ~5dc072d · diagram stage "5 of 6" · frames m2-stage-01/03/05.
+Session-start anchors after M2: git HEAD ≈ close-out commit · diagram badge "M2 complete ✓" ·
+frames m1-stage-00 + m2-stage-01/03/05/06 (out/, gitignored) · journey.gif in out/.
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,
@@ -115,7 +115,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
 ## Milestones (status)
 - [x] **M0** Rename dir to `asa`; write AGENTS.md + PLAN.md
 - [x] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
-- [~] **M2** Loop skeleton: memory + brain interface + one-shot agent (sub-milestones 1–5b done · 6 = close-out, next)
+- [x] **M2** Loop skeleton: memory + brain interface + one-shot agent (six concept sub-milestones · closed out)
 - [ ] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes
 - [ ] **M4** protocol_react: parser w/ error repair; unit tests; lab/parser_lab.py
 - [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests

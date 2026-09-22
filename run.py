@@ -29,8 +29,14 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--model", default=None, help="override the brain's default model tag")
     p.add_argument("--max-steps", type=int, default=1,
                    help="max loop turns — the loop guard (M2's only termination control)")
+    # --script = the TEACHING override. Its intent: rehearsal before reality.
+    # Instead of invoking any (possibly real) model, it swaps the selected brain
+    # for a scripted, deterministic MockBrain — so the exact CLI that will later
+    # drive Ollama/Gemini (M7/M8) can first be rehearsed offline with canned
+    # replies. The swap is reported loudly in main(); it is never silent.
     p.add_argument("--script", nargs="+", default=None,
-                   help="MockBrain scripted replies, one per brain call (deterministic demos)")
+                   help="scripted MockBrain replies, one per brain call — OVERRIDES "
+                        "--brain with a deterministic offline stand-in (teaching/demo mode)")
     p.add_argument("--explain", action="store_true", help="add the deeper 'why' annotations")
     p.add_argument("--no-color", action="store_true", help="plain output (also honors NO_COLOR)")
     return p.parse_args(argv)
@@ -48,6 +54,11 @@ def main(argv=None) -> int:
     N.kv("brain", brain.describe())
     N.kv("task", repr(args.task))
     N.kv("max_steps", args.max_steps)
+    if args.script:
+        N.warn(
+            f"--script is active: selected brain {args.brain!r} is replaced by a "
+            f"scripted MockBrain — offline, deterministic, zero real model calls."
+        )
 
     N.h2("1 · We build an Agent and its ContextWindow (the memory)")
     agent = Agent(brain, max_steps=args.max_steps, narrate=True)

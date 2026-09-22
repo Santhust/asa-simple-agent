@@ -60,6 +60,34 @@ def test_explain_adds_why_and_trim_sections(capsys):
     assert "?" in out                     # the 'why' narration markers
 
 
+def test_script_flag_reports_the_mock_override(monkeypatch, capsys):
+    """Demonstrates: --script announces that the selected brain is being replaced.
+
+    A quiet swap would be a foot-gun once real brains (ollama/gemini) exist —
+    picking one and then passing --script must never be silent.
+    """
+    monkeypatch.setattr(narrate, "_NO_COLOR", True)
+    run.main(["--task", "hi", "--script", "hello"])
+    out = capsys.readouterr().out
+    assert "--script is active" in out
+    assert "'mock' is replaced by a scripted MockBrain" in out
+    assert "zero real model calls" in out
+
+
+def test_help_declares_script_intent(capsys):
+    """Demonstrates: the CLI's own --help documents --script's purpose.
+
+    Correct now (the teaching override), and it keeps the clue in front of users
+    once real brains arrive.
+    """
+    with pytest.raises(SystemExit):
+        run.parse_args(["--help"])
+    out = capsys.readouterr().out
+    assert "--script" in out
+    assert "OVERRIDES" in out
+    assert "teaching/demo mode" in out
+
+
 def test_no_color_strips_ansi(monkeypatch, capsys):
     """Demonstrates: plain output has no escape sequences.
 

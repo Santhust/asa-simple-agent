@@ -42,6 +42,10 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
   implement a single concept, explain what/how/why, then STOP — the user reads the
   generated file(s), we build understanding together, then start the next sub-milestone.
   Never batch several concepts at once.
+- Session-start ritual (self-healing after compaction): re-read AGENTS.md + PLAN.md's
+  milestone status and per-milestone progress blocks. The journey picture lives in
+  `docs/m1-diagram.svg` (plus `out/frames/` PNGs and `git log` per-step commits); the
+  current in-flight step is recorded in PLAN.md.
 - Commit after EVERY sub-milestone: small, atomic, one-concept commits.
 - The story diagram is a living artifact: refresh `docs/m1-diagram.svg` whenever functionality
   changes (solid = built, dashed = planned) so every step has a graphical before/after.

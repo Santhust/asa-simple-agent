@@ -50,6 +50,7 @@ verbose narration, checkpointing with the user after each milestone.
 | tool.py / tools/   | Tool dataclass, JSON-schema params; Calculator, Notes, clock, plan-board | the agent's "hands" |
 | registry.py  | register/list/lookup; renders catalogue into prompt | documentation-first tools |
 | agent.py     | the loop; termination control; narration hooks | orchestration |
+| trace.py     | JSONL event for every internal step, timestamped | observability / glass-box |
 
 ### Memory / eviction policy (decided 2026-09, from the M2.1 discussion)
 - M2's trim() is **age-first** (system sacred · newest kept) — the right default and the
@@ -59,7 +60,31 @@ verbose narration, checkpointing with the user after each milestone.
   eviction as a fallback — one huge recent turn (e.g. a tool dump) can drown useful older
   turns, and then "drop the biggest" beats "drop the oldest".
 - "LLM context is a cache" (token budget, eviction, redundancy) becomes a docs topic (M11).
-| trace.py     | JSONL event for every internal step, timestamped | observability / glass-box |
+
+### M2 progress & decisions (2026-09 · session-compaction safety)
+Running as concept sub-milestones (working-rhythm addendum in AGENTS.md); every step = an
+atomic commit + (for functional steps) an SVG stage + PNG frame in `out/frames/`:
+- [x] M2.0  working-rhythm addendum written to AGENTS.md
+- [x] M2.1  asa/memory.py — ContextWindow (append · token_count · trim, age-first)
+- [x] M2.2  tests/test_memory.py (10 tests) + conftest.py
+- [x] M2.3  asa/agent.py — Agent skeleton: full hop Task→Memory→Brain→memory + loop seam
+- [x] M2.4  AgentResult(text, terminate_reason, steps, tokens) + tests/test_agent.py (10)
+- [x] M2.5  run.py rewritten agent-driven (+ --max-steps, --script, main(argv)) + tests/test_cli.py
+- [x] M2.5b --script now declares + *reports louder* the MockBrain override (see below)
+- [ ] M2.6  CLOSE-OUT checklist: `python -m pytest` green · PLAN.md flip M2→[x] ·
+           regenerate `docs/timeline.html` over `out/frames/*.png` (caption per stage) ·
+           final SVG pass (badge M2 done) · one narrated `--explain` run · final commit
+Recorded decisions:
+- **AgentResult**: run() returns answer AND outcome, kept apart (status bookkeeping never
+  pollutes model text). M2 always reports terminate_reason="max_steps"; M5 adds
+  "final_answer"/failure cases without changing the shape.
+- **--script policy**: a TEACHING override. Today it swaps the selected brain for a
+  scripted MockBrain with a loud warning; decided 2026-09: when real brains exist
+  (M7/M8), keep **warn + override** (lowest surprise) rather than a hard error —
+  revisit only if a silent misuse actually bites.
+- **CLI narration voice**: the Agent narrates its own mid-run internals; run.py adds only
+  gauges + the result block (no duplicated transcript).
+Session-start anchors: git HEAD ~5dc072d · diagram stage "5 of 6" · frames m2-stage-01/03/05.
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,
@@ -90,7 +115,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
 ## Milestones (status)
 - [x] **M0** Rename dir to `asa`; write AGENTS.md + PLAN.md
 - [x] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
-- [ ] **M2** Loop skeleton: memory + brain interface + one-shot agent
+- [~] **M2** Loop skeleton: memory + brain interface + one-shot agent (sub-milestones 1–5b done · 6 = close-out, next)
 - [ ] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes
 - [ ] **M4** protocol_react: parser w/ error repair; unit tests; lab/parser_lab.py
 - [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests

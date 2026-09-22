@@ -13,9 +13,27 @@ and the SEAM comment below mark exactly where M4 (ReAct parsing) and M5
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from . import narrate as N
 from .brain import Brain, Completion
 from .memory import ContextWindow
+
+
+@dataclass
+class AgentResult:
+    """The agent's structured output: the ANSWER plus the OUTCOME of the run.
+
+    Answer and outcome are deliberately separate. The answer is model-produced text;
+    the outcome is our bookkeeping about how the run ended (which loop guard fired).
+    If we folded the outcome into the answer string, we would pollute the model's
+    text and make the status unreliably parseable.
+    """
+
+    text: str              # the answer (today: the last assistant turn; M5: the "Final Answer:" text)
+    terminate_reason: str  # how the loop ended — always "max_steps" in M2; M5 adds "final_answer" / failure policy
+    steps: int             # loop turns that actually ran
+    tokens: int            # context token_count after the run (for narration / CLI / trace)
 
 
 class Agent:
@@ -41,10 +59,10 @@ class Agent:
         self.narrate = narrate
         self.memory = ContextWindow(system=system_prompt, budget_tokens=budget_tokens)
         self.step_count = 0
-        self.answer: str | None = None
+        self.result: AgentResult | None = None
 
-    def run(self, task: str) -> str:
-        """Take one task through the skeleton loop; return the final answer.
+    def run(self, task: str) -> AgentResult:
+        """Take one task through the skeleton loop; return the run's result.
 
         Memory persists on the agent: call run() again and the transcript keeps
         growing — a single Agent instance is a single session.
@@ -73,8 +91,13 @@ class Agent:
             if self.narrate:
                 self._narrate_completion(completion)
 
-        self.answer = self.memory.messages[-1].content
-        return self.answer
+        self.result = AgentResult(
+            text=self.memory.messages[-1].content,
+            terminate_reason="max_steps",
+            steps=self.step_count,
+            tokens=self.memory.token_count(),
+        )
+        return self.result
 
     # ---- narration (front-of-house; memory.py stays pure) ------------------
     def _narrate_context(self) -> None:

@@ -73,13 +73,14 @@ Same stream feeds the narrated CLI and the HTML playground player.
   (scrub/step; context gutter + token gauge; model req<->resp; tool cards firing),
   breakage lab (unknown tool / malformed action / context overflow / loop exhaustion),
   two-protocol comparison, model zoo, glossary + quiz. Offline via shipped traces.
+- `docs/m1-diagram.svg`: state-of-functionality diagram after M1 (proto of the SVG tooling/docs series)
 - `docs/`: 7 illustrated topics: (1) what is an agent, (2) the loop, (3) context/memory,
   (4) tools & registry & prompt-craft, (5) parsing / two protocols, (6) the brain zoo,
   (7) observability & failure modes. Hand-authored SVGs; self-check quiz each.
 
 ## Milestones (status)
 - [x] **M0** Rename dir to `asa`; write AGENTS.md + PLAN.md
-- [ ] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
+- [x] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
 - [ ] **M2** Loop skeleton: memory + brain interface + one-shot agent
 - [ ] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes
 - [ ] **M4** protocol_react: parser w/ error repair; unit tests; lab/parser_lab.py

@@ -50,6 +50,15 @@ verbose narration, checkpointing with the user after each milestone.
 | tool.py / tools/   | Tool dataclass, JSON-schema params; Calculator, Notes, clock, plan-board | the agent's "hands" |
 | registry.py  | register/list/lookup; renders catalogue into prompt | documentation-first tools |
 | agent.py     | the loop; termination control; narration hooks | orchestration |
+
+### Memory / eviction policy (decided 2026-09, from the M2.1 discussion)
+- M2's trim() is **age-first** (system sacred · newest kept) — the right default and the
+  cleanest first lesson. It stays for the teaching milestone.
+- Future refinement when tool Observations enter context (M3+): (a) truncate/length-cap tool
+  output **at ingestion**, (b) summarize old turns instead of deleting, (c) size-aware
+  eviction as a fallback — one huge recent turn (e.g. a tool dump) can drown useful older
+  turns, and then "drop the biggest" beats "drop the oldest".
+- "LLM context is a cache" (token budget, eviction, redundancy) becomes a docs topic (M11).
 | trace.py     | JSONL event for every internal step, timestamped | observability / glass-box |
 
 ### Trace-event schema (JSONL; one JSON per line)

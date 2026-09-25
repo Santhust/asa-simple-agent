@@ -86,6 +86,37 @@ Recorded decisions:
 Session-start anchors after M2: git HEAD ≈ close-out commit · diagram badge "M2 complete ✓" ·
 frames m1-stage-00 + m2-stage-01/03/05/06 (out/, gitignored) · journey.gif in out/.
 
+### M3 progress & decisions (2026-09 · tools & registry — the agent's hands)
+Same rhythm: one concept per step · tests + a narrated demo every step · atomic commit ·
+SVG stage + frame for functional steps.
+- [x] M3.0  this map + the two decisions written down (compaction insurance)
+- [ ] M3.1  asa/tool.py — Tool + ToolCall + ToolResult + mini-schema validation
+           (validate before executing; failure is data, never an exception) + lab/tool_lab.py
+- [ ] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
+- [ ] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
+- [ ] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
+- [ ] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
+           agent SEES its hands; the loop still cannot act on them (that is M4's parser)
+- [ ] M3.6  close-out — pytest green · PLAN M3→[x] · SVG pass (Registry + tools turn solid in the
+           loop row; protocol/ToolCall stay dashed until M4/M5) · frame + timeline regen ·
+           journey.gif · one narrated run · final commit
+Recorded decisions (2026-09):
+- **Where tools live**: package `asa/tools/`, one module per tool (Calculator, clock, Notes,
+  plan-board) — matches the module table and M12's playground.
+- **M3.5 is IN**: the registry is wired into the Agent inside M3 (catalogue → system prompt).
+  Rationale: it completes the registry lesson ("the model learns what exists") without
+  needing the ReAct parser; the agent touching tools is a *seam*, not a lie.
+- **Schema shape**: `params` is a mini JSON-schema subset (types number/integer/string/boolean
+  + required + help), deliberately convertible into a real
+  `{"type":"object","properties":…,"required":[…]}` for M9's native protocol — decide now,
+  repaint never.
+- **Failure is data**: a bad arg or a tool that raises returns `ToolResult(is_error=True)`;
+  the error text becomes an Observation the model can react to. The agent never dies from a
+  tool call (real models typo).
+- `number` accepts int|float and coerces to float; unknown args are errors (typo guard).
+- `lab/` layer opens in M3.1 with lab/tool_lab.py (narrated, one internal per script; a 2-line
+  `sys.path` bootstrap is the convention — note it in AGENTS once a second lab exists).
+
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,
 brain.request, brain.response, protocol.raw, protocol.parsed, protocol.error,
@@ -116,7 +147,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
 - [x] **M0** Rename dir to `asa`; write AGENTS.md + PLAN.md
 - [x] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
 - [x] **M2** Loop skeleton: memory + brain interface + one-shot agent (six concept sub-milestones · closed out)
-- [ ] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes
+- [~] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes (7 concept sub-milestones · map below, started)
 - [ ] **M4** protocol_react: parser w/ error repair; unit tests; lab/parser_lab.py
 - [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests
 - [ ] **M6** Trace layer: JSONL event schema (CLI + playground share it)

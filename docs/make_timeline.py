@@ -18,7 +18,7 @@ from pathlib import Path
 FRAMES_DIR = Path(__file__).resolve().parent.parent / "out" / "frames"
 OUT = Path(__file__).resolve().parent / "timeline.html"
 
-TITLE = "asa — the journey in pictures · M1 → M2"
+TITLE = "asa — the journey in pictures · M1 → M3"
 
 CAPTIONS = {
     "m1-stage-00.png": "M1 — the shell: run.py → Message → Brain (→ MockBrain) → Completion → Narrator",
@@ -26,6 +26,7 @@ CAPTIONS = {
     "m2-stage-03.png": "M2·3 — agent: a full hop Task→Memory→Brain→reply-stored, the loop seam + max_steps guard",
     "m2-stage-05.png": "M2·5 — CLI: run.py becomes the mouthpiece (narrated memory gauges, answer/outcome result block)",
     "m2-stage-06.png": "M2 close-out — the loop skeleton is complete; next up M3 tools & registry",
+    "m3-stage-01.png": "M3·1 — the hand gets a shape: Tool(data + func) · ToolCall · ToolResult, with failure as data",
 }
 
 CSS = """

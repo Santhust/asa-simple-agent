@@ -28,6 +28,7 @@ CAPTIONS = {
     "m2-stage-06.png": "M2 close-out — the loop skeleton is complete; next up M3 tools & registry",
     "m3-stage-01.png": "M3·1 — the hand gets a shape: Tool(data + func) · ToolCall · ToolResult, with failure as data",
     "m3-stage-02.png": "M3·2 — the phonebook + the manual page: ToolRegistry (dup→ValueError · miss→None · sorted) and a catalogue rendered FROM the schema",
+    "m3-stage-03.png": "M3·3 — the first real hands: calculator (pure, hand parser, no eval, length+depth guards) + clock (read-only, optional utc)",
 }
 
 CSS = """

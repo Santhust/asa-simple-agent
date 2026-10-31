@@ -93,7 +93,7 @@ SVG stage + frame for functional steps.
 - [x] M3.1  asa/tool.py — Tool + ToolCall + ToolResult + mini-schema validation
            (validate before executing; failure is data, never an exception) + lab/tool_lab.py
 - [x] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
-- [ ] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
+- [x] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
 - [ ] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
 - [ ] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
            agent SEES its hands; the loop still cannot act on them (that is M4's parser)
@@ -133,9 +133,30 @@ Recorded decisions (2026-09):
     zero-param tools get no Params stub; an EMPTY registry renders a sentence, never `""`.
     The "how to call" instructions stay OUT — that is M4's protocol layer's job; the page
     documents only WHAT exists. Exact format visible in lab/registry_lab.py beat 4.
+- **M3.3 recorded decisions (2026-10):**
+  - **No eval(), ever** — a tool must be exactly as wide as its documentation says. The
+    catalogue promises arithmetic; `eval()` would deliver arbitrary Python, making the
+    narrowness a fiction. Instead: a hand-rolled recursive-descent parser (numbers,
+    + - * /, parens, unary minus) told as the "every internal visible" lesson; the
+    real-world `ast`-whitelist idiom gets a `why()` mention, not the teaching pick.
+  - **Honest numerics, zero cosmetic rounding**: ints stay ints (`2+3 = 5`), `/` is
+    Python (`7/2 = 3.5`, `8/2 = 4.0`), `0.1+0.2` shows `0.30000000000000004` — the model
+    sees IEEE truth rather than a rounded story it would later trust.
+  - **Resource limits are tool business** (the mini-schema cannot say them): expression
+    capped at 200 chars, paren nesting at 32 — a recursive parser can be stack-crashed
+    by adversarial input, and "says no as text" preserves failure-is-data. Test lesson
+    found live: size the depth-guard fixture UNDER the length cap, or the wrong guard
+    fires first (the failed test caught the fixture, not the tool).
+  - **Clock = first real optional param** (`utc` bool, default local); tests pin SHAPE
+    (ISO regex + label), never a timestamp — the "assert structure, not wall-clock"
+    philosophy written down before M5's golden traces lean on it.
+  - Tool modules each expose **`build() -> Tool`**; M3.5's wiring will loop over factories.
+  - Parser raises `_ExpressionError` (readable, internal); the tool function phrases it
+    into `ToolResult(is_error=True)` — message policy lives at the boundary, the parser
+    stays a pure mechanism.
 
-Session-start anchors after M3.2: git HEAD ≈ M3.2 commit · diagram badge "M3 · 2 of 7 done" ·
-frames m3-stage-01/02 (out/, gitignored) · 47 tests green · next up = M3.3 (Calculator + clock).
+Session-start anchors after M3.3: git HEAD ≈ M3.3 commit · diagram badge "M3 · 3 of 7 done" ·
+frames m3-stage-01/02/03 (out/, gitignored) · 61 tests green · next up = M3.4 (Notes + plan-board).
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,

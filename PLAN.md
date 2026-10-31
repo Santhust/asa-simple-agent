@@ -95,7 +95,7 @@ SVG stage + frame for functional steps.
 - [x] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
 - [x] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
 - [x] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
-- [ ] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
+- [x] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
            agent SEES its hands; the loop still cannot act on them (that is M4's parser)
 - [ ] M3.6  close-out — pytest green · PLAN M3→[x] · SVG pass (Registry + tools turn solid in the
            loop row; protocol/ToolCall stay dashed until M4/M5) · frame + timeline regen ·
@@ -174,10 +174,29 @@ Recorded decisions (2026-09):
     param — bools/floats/strings refused at the M3.1 boundary before state mutates.
   - **No timestamps in notes** — entries are numbered plain text (the clock covers
     "when"); a refused write must not burn a number (asserted: numbering restarts at 1).
+- **M3.5 recorded decisions (2026-10, locked with the user in plan):**
+  - **`Agent(registry=None)` → `default_tools()`** — "an agent comes WITH its hands":
+    one fresh world per agent, session-lifetime state (M3.4's rule automatic at the
+    wiring layer). The no-tools lesson stays reachable by passing an explicit empty
+    `ToolRegistry()` — which run.py's new `--no-tools` wires transparently.
+  - **`default_tools()` is the bundle-flattener** (asa/tools/__init__.py): flattens the
+    four factories into one registry over one fresh world; call it twice = two strangers.
+  - **The catalogue is PASTED, not retyped** — `_compose_system_prompt()` appends
+    `registry.render_catalogue()` after the caller's system text (composition, never
+    replacement), byte-equality asserted so prompt-side and loop-side documentation
+    can never drift. M4 extends THAT helper with "how to call" instructions.
+  - **The SEAM stays honest, pinned by a test**: a MockBrain writing
+    `Action: calculator(...)` is memorized verbatim — no tool runs, terminate_reason
+    stays "max_steps". M4's flip of exactly this behavior will be test-visible.
+  - Narration stays agent-side (M3.2's registry-stays-pure rule): run() announces
+    "tools wired · N tools" and, honestly, that the loop cannot act on them yet.
+  - M2-carryover fix: test_agent's "brain receives system then task" equality on the
+    bare prompt became a startswith + catalogue-inclusion check — the prompt is
+    composed now, and the test describes the new truth (role order still proven).
 
-Session-start anchors after M3.4: git HEAD ≈ M3.4 commit · diagram badge "M3 · 4 of 7 done" ·
-frames m3-stage-01..04 (out/, gitignored) · 78 tests green · next up = M3.5 (Agent wiring:
-catalogue lands in the system prompt; loop still cannot act — that's M4).
+Session-start anchors after M3.5: git HEAD ≈ M3.5 commit · diagram badge "M3 · 5 of 7 done" ·
+frames m3-stage-01..05 (out/, gitignored) · 86 tests green · next up = M3.6 close-out (badge
+flip to "M3 complete ✓", timeline + journey.gif refresh, narrated run) — then M4 (ReAct parser).
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,

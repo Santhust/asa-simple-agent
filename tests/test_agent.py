@@ -59,7 +59,12 @@ def test_brain_receives_system_then_task():
     agent.run("count to ten")
     roles = [m.role for m in brain.seen_messages]
     assert roles == ["system", "user"]
-    assert brain.seen_messages[0].content == "You are 'asa', a teaching agent built from scratch."
+    # M3.5: the bare system text now heads the COMPOSED prompt, which also
+    # carries the tool catalogue — so equality becomes a prefix check:
+    assert brain.seen_messages[0].content.startswith(
+        "You are 'asa', a teaching agent built from scratch."
+    )
+    assert "## Available tools" in brain.seen_messages[0].content
     assert brain.seen_messages[1].content == "count to ten"
 
 

@@ -30,6 +30,7 @@ CAPTIONS = {
     "m3-stage-02.png": "M3·2 — the phonebook + the manual page: ToolRegistry (dup→ValueError · miss→None · sorted) and a catalogue rendered FROM the schema",
     "m3-stage-03.png": "M3·3 — the first real hands: calculator (pure, hand parser, no eval, length+depth guards) + clock (read-only, optional utc)",
     "m3-stage-04.png": "M3·4 — the stateful pair: notes (numbered ledger, ×2 hands) + plan-board (stable ids, ×3 hands); state lives OUTSIDE the hands in injected stores",
+    "m3-stage-05.png": "M3·5 — the wiring: default_tools() builds one fresh world per agent, and the catalogue (the model's manual page) rides the system prompt — the loop still cannot act",
 }
 
 CSS = """

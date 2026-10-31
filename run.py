@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """asa · a simple agent — command-line front door.
 
-Milestone 2 (the loop skeleton): run.py now drives the AGENT, not the hand-rolled
-shell. The agent wires Task -> ContextWindow -> Brain -> memory; the CLI is the
-mouthpiece that narrates what it sees: the memory BEFORE a run, the mid-run internals
-the agent narrates itself, and the structured result with answer and outcome kept apart.
-
-Tools, ReAct parsing and the real loop arrive M3-M5 — nothing in this file changes then,
-because the agent is behind one stable interface (run(task) -> AgentResult).
+Milestone 3.5 (the wiring): run.py builds the agent WITH its hands — the
+ToolRegistry lands in the system prompt (the model reads the catalogue) and
+--no-tools demonstrably builds the honest empty one. The loop still cannot
+ACT: parsing model text into ToolCall is M4; termination beyond the step
+budget is M5. The CLI is the mouthpiece that narrates what it sees: the
+memory BEFORE a run, the mid-run internals the agent narrates itself, and
+the structured result with answer and outcome kept apart.
 """
 
 from __future__ import annotations
@@ -18,12 +18,13 @@ import asa.narrate as N
 from asa.agent import Agent
 from asa.brain import Brain, MockBrain
 from asa.memory import ContextWindow
+from asa.registry import ToolRegistry
 
 BRAINS = {"mock": MockBrain}  # ollama -> M7, gemini -> M8, gpt2 -> M10
 
 
 def parse_args(argv=None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="asa — a simple agent (M2: loop skeleton)")
+    p = argparse.ArgumentParser(description="asa — a simple agent (M3: tools & registry wired)")
     p.add_argument("--task", default="say hello to me", help="the task to discuss")
     p.add_argument("--brain", default="mock", choices=sorted(BRAINS), help="which brain to use")
     p.add_argument("--model", default=None, help="override the brain's default model tag")
@@ -37,6 +38,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--script", nargs="+", default=None,
                    help="scripted MockBrain replies, one per brain call — OVERRIDES "
                         "--brain with a deterministic offline stand-in (teaching/demo mode)")
+    p.add_argument("--no-tools", action="store_true",
+                   help="wire an explicitly EMPTY registry — the agent reads the "
+                        "honest 'you have no tools' paragraph (M3.2's empty catalogue)")
     p.add_argument("--explain", action="store_true", help="add the deeper 'why' annotations")
     p.add_argument("--no-color", action="store_true", help="plain output (also honors NO_COLOR)")
     return p.parse_args(argv)
@@ -50,7 +54,7 @@ def main(argv=None) -> int:
     if args.script:
         brain = MockBrain(script=args.script, model=brain.model)
 
-    N.h1("asa — a simple agent · narrated run (Milestone 2: the loop skeleton)")
+    N.h1("asa — a simple agent · narrated run (Milestone 3.5: the wiring)")
     N.kv("brain", brain.describe())
     N.kv("task", repr(args.task))
     N.kv("max_steps", args.max_steps)
@@ -61,7 +65,13 @@ def main(argv=None) -> int:
         )
 
     N.h2("1 · We build an Agent and its ContextWindow (the memory)")
-    agent = Agent(brain, max_steps=args.max_steps, narrate=True)
+    if args.no_tools:
+        registry = ToolRegistry()  # explicitly empty — the honest no-hands agent
+        agent = Agent(brain, max_steps=args.max_steps, narrate=True, registry=registry)
+        N.warn("--no-tools is active: an explicitly EMPTY registry is wired; the "
+               "system prompt carries 'You have no tools…' (the M3.2 empty catalogue)")
+    else:
+        agent = Agent(brain, max_steps=args.max_steps, narrate=True)
     N.info(
         f"memory before run: {len(agent.memory)} message · "
         f"~{agent.memory.token_count()} tokens (budget {agent.memory.budget_tokens})"
@@ -102,10 +112,11 @@ def main(argv=None) -> int:
               "platforms run 'context on a budget'.")
 
     N.h2("What just happened — and what comes next")
-    N.info("The Agent is a text-in/text-out machine with memory. No tools, no parsing,")
-    N.info("no termination logic beyond the step budget. Those arrive one at a time:")
-    N.info("  M3 tools & registry · M4 ReAct parser · M5 full loop with Final Answer")
-    N.ok("loop skeleton ready.")
+    N.info("The Agent is a text-in/text-out machine with memory. It SEES its hands")
+    N.info("(M3.5: the catalogue lives in the system prompt) but the loop cannot yet")
+    N.info("act on them — parsing model text into ToolCall is next:")
+    N.info("  M3 close-out · M4 ReAct parser · M5 full loop with Final Answer")
+    N.ok("tools wired, loop honest: the agent sees its hands, touches nothing yet.")
 
     return 0
 

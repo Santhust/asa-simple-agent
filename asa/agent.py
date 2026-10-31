@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from . import narrate as N
 from .brain import Brain, Completion
 from .memory import ContextWindow
+from .registry import ToolRegistry
+from .tools import default_tools
 
 
 @dataclass
@@ -50,6 +52,7 @@ class Agent:
         max_steps: int = 1,
         budget_tokens: int | None = None,
         narrate: bool = True,
+        registry: ToolRegistry | None = None,
     ):
         if max_steps < 1:
             raise ValueError("max_steps must be >= 1")
@@ -57,9 +60,28 @@ class Agent:
         self.max_steps = max_steps
         self.budget_tokens = budget_tokens
         self.narrate = narrate
-        self.memory = ContextWindow(system=system_prompt, budget_tokens=budget_tokens)
+        # M3.5 wiring: an agent comes WITH its hands. None -> default_tools()
+        # (one fresh world, private to this agent); an explicitly passed empty
+        # registry is honored too — the no-tools lesson is one line away.
+        self.registry = registry if registry is not None else default_tools()
+        self.memory = ContextWindow(
+            system=self._compose_system_prompt(system_prompt),
+            budget_tokens=budget_tokens,
+        )
         self.step_count = 0
         self.result: AgentResult | None = None
+
+    def _compose_system_prompt(self, system_prompt: str) -> str:
+        """Paste the hands into the prompt: system text + the catalogue block.
+
+        The catalogue is rendered FROM the registry (M3.2) — pasted, never
+        retyped — so what the model reads here is byte-for-byte the same
+        documentation the M4 loop will resolve against. M4 will extend THIS
+        helper with the 'how to call' instructions; the loop itself stays
+        untouched until then (the SEAM below still says M4 — honestly today,
+        because no text the model produces is parsed or acted on yet).
+        """
+        return system_prompt.rstrip() + "\n\n" + self.registry.render_catalogue()
 
     def run(self, task: str) -> AgentResult:
         """Take one task through the skeleton loop; return the run's result.
@@ -72,6 +94,14 @@ class Agent:
             N.info(
                 f"task entered memory · context now {len(self.memory)} messages · "
                 f"{self.memory.token_count()} tokens (budget {self.budget_tokens})"
+            )
+            N.info(
+                f"tools wired · {len(self.registry)} tools: "
+                f"{', '.join(self.registry.names())}"
+            )
+            N.info(
+                "the loop still cannot act on them — the protocol that turns model "
+                "text into ToolCall is M4's; today every reply is just memorized"
             )
 
         for step in range(self.max_steps):

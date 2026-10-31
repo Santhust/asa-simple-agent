@@ -90,9 +90,9 @@ frames m1-stage-00 + m2-stage-01/03/05/06 (out/, gitignored) · journey.gif in o
 Same rhythm: one concept per step · tests + a narrated demo every step · atomic commit ·
 SVG stage + frame for functional steps.
 - [x] M3.0  this map + the two decisions written down (compaction insurance)
-- [ ] M3.1  asa/tool.py — Tool + ToolCall + ToolResult + mini-schema validation
+- [x] M3.1  asa/tool.py — Tool + ToolCall + ToolResult + mini-schema validation
            (validate before executing; failure is data, never an exception) + lab/tool_lab.py
-- [ ] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
+- [x] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
 - [ ] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
 - [ ] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
 - [ ] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
@@ -115,7 +115,27 @@ Recorded decisions (2026-09):
   tool call (real models typo).
 - `number` accepts int|float and coerces to float; unknown args are errors (typo guard).
 - `lab/` layer opens in M3.1 with lab/tool_lab.py (narrated, one internal per script; a 2-line
-  `sys.path` bootstrap is the convention — note it in AGENTS once a second lab exists).
+  `sys.path` bootstrap is the convention — noted in AGENTS.md in M3.2, once a second lab,
+  lab/registry_lab.py, existed).
+- **M3.2 recorded decisions (2026-10):**
+  - Registry = **phonebook, not dispatcher**: `register/get/names/len/contains` only —
+    no `registry.run()`; resolution (`get`) and execution (`Tool.run`) stay two doors in
+    two modules, and the M4 loop composes them.
+  - Two failure timings, two philosophies: **duplicate name → ValueError** (a duplicate is
+    OUR build-time bug, like tool.py's unknown schema type — loud in tests, never silent
+    shadowing); **missed lookup → None** (a miss is the MODEL's run-time event — M4 phrases
+    it as an error Observation, the failure-is-data philosophy one layer up).
+  - **Sorted catalogue** (`names()` + sections in name order): registration order must not
+    leak into the prompt — golden-trace determinism for M5. Params render in the Tool's own
+    declared order. Optional params are marked `optional` so the catalogue cannot lie.
+  - **Catalogue format locked** (the M3.5 system-prompt section): `## Available tools` →
+    one `### name` block with description + `Params:` lines `- p (type, required|optional): help`;
+    zero-param tools get no Params stub; an EMPTY registry renders a sentence, never `""`.
+    The "how to call" instructions stay OUT — that is M4's protocol layer's job; the page
+    documents only WHAT exists. Exact format visible in lab/registry_lab.py beat 4.
+
+Session-start anchors after M3.2: git HEAD ≈ M3.2 commit · diagram badge "M3 · 2 of 7 done" ·
+frames m3-stage-01/02 (out/, gitignored) · 47 tests green · next up = M3.3 (Calculator + clock).
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,

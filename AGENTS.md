@@ -25,6 +25,8 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
 ## Learning layers
 - CLI narrator: every run explains what/how/why, color-coded; --verbose / --explain flags.
 - `lab/*.py`: poke one internal at a time (e.g. lab/parser_lab.py).
+  Convention (from M3.1, once a second lab existed): each lab starts with the
+  two-line `sys.path` bootstrap — labs are script-first, never installed.
 - `playground/`: self-contained HTML doc: animated architecture diagram, trace player,
   breakage lab, two-protocol comparison, model zoo, glossary + self-check quiz.
   Plays shipped pre-recorded traces offline (no network needed).

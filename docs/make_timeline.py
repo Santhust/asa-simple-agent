@@ -27,6 +27,7 @@ CAPTIONS = {
     "m2-stage-05.png": "M2·5 — CLI: run.py becomes the mouthpiece (narrated memory gauges, answer/outcome result block)",
     "m2-stage-06.png": "M2 close-out — the loop skeleton is complete; next up M3 tools & registry",
     "m3-stage-01.png": "M3·1 — the hand gets a shape: Tool(data + func) · ToolCall · ToolResult, with failure as data",
+    "m3-stage-02.png": "M3·2 — the phonebook + the manual page: ToolRegistry (dup→ValueError · miss→None · sorted) and a catalogue rendered FROM the schema",
 }
 
 CSS = """

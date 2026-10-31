@@ -94,7 +94,7 @@ SVG stage + frame for functional steps.
            (validate before executing; failure is data, never an exception) + lab/tool_lab.py
 - [x] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
 - [x] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
-- [ ] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
+- [x] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
 - [ ] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
            agent SEES its hands; the loop still cannot act on them (that is M4's parser)
 - [ ] M3.6  close-out — pytest green · PLAN M3→[x] · SVG pass (Registry + tools turn solid in the
@@ -154,9 +154,30 @@ Recorded decisions (2026-09):
   - Parser raises `_ExpressionError` (readable, internal); the tool function phrases it
     into `ToolResult(is_error=True)` — message policy lives at the boundary, the parser
     stays a pure mechanism.
+- **M3.4 recorded decisions (2026-10, locked with the user in plan):**
+  - **State lives OUTSIDE the hands, factory-injected** — `build(store=None)` constructs a
+    fresh store per call; state lifetime becomes the M3.5 agent session; zero module
+    globals; tests build fresh worlds and cannot leak. `build()` twice = two strangers.
+  - **Stateful tools ship as BUNDLES** — notes = 2 hands (`notes_write`/`notes_read`);
+    plan-board = 3 hands (`board_add`/`board_move`/`board_list`) over ONE Board. A store
+    with only a writer can't be verified; splitting the trio lets them drift. M3.5's
+    wiring flattens the bundles.
+  - **Stable ids, never indices** — the board's ids (and notes' numbering) are monotonic
+    and never reused; "move item 2" survives every later move. The index-shift bug is
+    the narrated `why()` beat in lab/state_lab.py, not a live trap.
+  - **Named store classes** — `NotesStore` (grow-only list, returns the entry number) and
+    `Board` (text per id, place per id, insertion order per column, `(empty)` renderer).
+    Readable structure over dict-magic.
+  - **Enum vocab is the tool's business** — todo/doing/done (+ list's `all` view word)
+    checked in the tool with refusals that NAME the vocabulary (the schema can't say
+    enums; same lesson as calculator's caps). `board_move` is the first real `integer`
+    param — bools/floats/strings refused at the M3.1 boundary before state mutates.
+  - **No timestamps in notes** — entries are numbered plain text (the clock covers
+    "when"); a refused write must not burn a number (asserted: numbering restarts at 1).
 
-Session-start anchors after M3.3: git HEAD ≈ M3.3 commit · diagram badge "M3 · 3 of 7 done" ·
-frames m3-stage-01/02/03 (out/, gitignored) · 61 tests green · next up = M3.4 (Notes + plan-board).
+Session-start anchors after M3.4: git HEAD ≈ M3.4 commit · diagram badge "M3 · 4 of 7 done" ·
+frames m3-stage-01..04 (out/, gitignored) · 78 tests green · next up = M3.5 (Agent wiring:
+catalogue lands in the system prompt; loop still cannot act — that's M4).
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,

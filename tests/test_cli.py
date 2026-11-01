@@ -14,24 +14,22 @@ import run
 def test_run_answers_with_scripted_brain(monkeypatch, capsys):
     """Demonstrates: the CLI turns a scripted brain into a full narrated run.
 
-    Three scripted replies + --max-steps 3 -> three loop turns, the last reply is
-    the answer, and termination honestly reports the step budget in M2.
     Colors are forced off here — this test asserts CONTENT, color gets its own case.
     """
     monkeypatch.setattr(narrate, "_NO_COLOR", True)
     rc = run.main([
         "--task", "count to three",
-        "--script", "one", "two", "three",
+        "--script", "Thought: done\nFinal Answer: three",
         "--max-steps", "3",
     ])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "one" in out and "two" in out and "three" in out
+    assert "three" in out
     assert "memory before run:" in out
     assert "memory after run:" in out
     assert "answer: 'three'" in out
-    assert "terminate_reason: max_steps" in out
-    assert "steps: 3" in out
+    assert "terminate_reason: final_answer" in out
+    assert "steps: 1" in out
 
 
 def test_max_steps_worded_as_the_guard(monkeypatch, capsys):
@@ -39,7 +37,7 @@ def test_max_steps_worded_as_the_guard(monkeypatch, capsys):
     monkeypatch.setattr(narrate, "_NO_COLOR", True)
     rc = run.main([
         "--task", "say hi",
-        "--script", "first reply", "wasted reply",
+        "--script", "Thought: done\nFinal Answer: first reply", "wasted reply",
     ])
     out = capsys.readouterr().out
     assert rc == 0

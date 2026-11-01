@@ -44,8 +44,6 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
 - **Story first, names second**: When explaining a milestone/step/intern or laying out work, start with a plain-language story — situation → what changes → in one breath. Steps come as nouns/verbs, not jargon. Technical names (classes/modules/tests) are a quiet second layer. The value is the narrative style, not any particular analogy.
 - **Pause after each sub-milestone**: After implementing one concept and committing, stop. Let the user read the generated files, confirm understanding, and approve before the next sub-milestone starts. Never batch multiple concepts into one edit or commit. The pause is the learning rhythm — one step, one check, one build.
 - **Commit after EVERY sub-milestone**: small, atomic, one-concept commits; never bundle steps.
-- **Pause after each sub-milestone**: After implementing one concept and committing, stop. Let the user read the generated files, confirm understanding, and approve before the next sub-milestone starts. Never batch multiple concepts into one edit or commit. The pause is the learning rhythm — one step, one check, one build.
-- **Commit after EVERY sub-milestone**: small, atomic, one-concept commits; never bundle steps.
 - Sub-milestones: every milestone is split into concept-based sub-milestones. In ONE step,
   implement a single concept, explain what/how/why, then STOP — the user reads the
   generated file(s), we build understanding together, then start the next sub-milestone.

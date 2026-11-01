@@ -60,17 +60,20 @@ def test_a_custom_system_prompt_survives_beside_the_catalogue():
 
 
 def test_the_catalogue_is_pasted_not_retyped():
-    """Demonstrates drift-proofing: the prompt block IS the registry's page.
+    """Demonstrates drift-proofing: the registry's page is pasted intact.
 
     Why it matters: the model reads the same bytes the M4 loop resolves
     ToolCalls against. If these were two renderings, they could disagree —
-    the classic documentation drift. Byte equality is the guarantee that
-    cannot quietly rot later.
+    the classic documentation drift. M4.5 adds the 'how to call' block
+    AFTER the catalogue (never retyped, never reordered).
     """
     registry = default_tools()
     agent = _agent(registry=registry)
     system = agent.memory.messages[0].content
-    assert system.endswith(registry.render_catalogue())
+    cat = registry.render_catalogue()
+    assert cat in system
+    # catalogue comes before the how-to-call instructions
+    assert system.index(cat) + len(cat) <= system.index("## How to call tools") if "## How to call tools" in system else True
 
 
 def test_default_toolsregisters_all_seven_sorted():

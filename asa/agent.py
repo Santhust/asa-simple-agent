@@ -72,16 +72,30 @@ class Agent:
         self.result: AgentResult | None = None
 
     def _compose_system_prompt(self, system_prompt: str) -> str:
-        """Paste the hands into the prompt: system text + the catalogue block.
+        """Paste the hands into the prompt: system text + catalogue + how-to-call.
 
         The catalogue is rendered FROM the registry (M3.2) — pasted, never
         retyped — so what the model reads here is byte-for-byte the same
-        documentation the M4 loop will resolve against. M4 will extend THIS
-        helper with the 'how to call' instructions; the loop itself stays
-        untouched until then (the SEAM below still says M4 — honestly today,
-        because no text the model produces is parsed or acted on yet).
+        documentation the M4 loop will resolve against. We now add the
+        ReAct "how to write the letter" instructions after the catalogue.
         """
-        return system_prompt.rstrip() + "\n\n" + self.registry.render_catalogue()
+        base = system_prompt.rstrip() + "\n\n" + self.registry.render_catalogue()
+        howto = """
+
+## How to call tools (ReAct)
+When you need to use a tool, write EXACTLY this form:
+Thought: <why you are doing this>
+Action: <tool name from the list above>
+Action Input: <key=value pairs, or a JSON object>. Use the parameter names shown.
+
+To answer directly (no tool), write:
+Thought: <brief reasoning>
+Final Answer: <your answer>
+
+If a message comes back starting with "Observation:", read it and continue.
+If you see a gentle note about fixing your letter, correct the format and try again.
+"""
+        return base + howto
 
     def run(self, task: str) -> AgentResult:
         """Take one task through the skeleton loop; return the run's result.

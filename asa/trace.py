@@ -34,6 +34,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+import json
 
 # Timestamp utility
 def _now() -> float:
@@ -105,7 +106,24 @@ def write_event(kind: str, payload: dict[str, Any]) -> None:
     """
     global _session_iter
     _session_iter += 1
-    event = Event(ts=_now(), iter=_session_iter, kind=kind, payload=payload)
+    # Convert any Message objects in payload to their string representation
+    import json
+    from dataclasses import is_dataclass
+    def sanitize(obj):
+        if isinstance(obj, dict):
+            return {k: sanitize(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [sanitize(v) for v in obj]
+        elif is_dataclass(obj):
+            # Handle dataclasses by calling their render() method if available
+            if hasattr(obj, 'render'):
+                return obj.render()
+            # Otherwise, try to convert to dict
+            return {k: sanitize(v) for k, v in obj.__dict__.items()}
+        else:
+            return obj
+    sanitized_payload = sanitize(payload)
+    event = Event(ts=_now(), iter=_session_iter, kind=kind, payload=sanitized_payload)
     # Ensure the file exists and append atomically (write to temp then rename)
     tmp = _TRACE_FILE.with_suffix(".tmp")
     # Read existing lines to preserve order (small files only)

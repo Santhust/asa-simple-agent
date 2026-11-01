@@ -133,7 +133,7 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             if self.narrate:
                 self._narrate_completion(completion)
 
-            write_event("brain.request", {"prompt": self.memory.messages})
+            write_event("brain.request", {"prompt": [m.render() for m in self.memory.messages]})
             write_event("brain.response", {"text": reply, "model": completion.model})
 
             verdict = parse(reply)

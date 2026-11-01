@@ -57,16 +57,22 @@ def test_write_and_read_events():
 
     Why it matters: the CLI and playground can replay the trace later.
     """
-    # Each test should start fresh
-    from asa.trace import reset_session
+    from pathlib import Path
+    from asa.trace import reset_session, _TRACE_FILE
+    # Start with completely clean slate
     reset_session()
+    # Explicitly clear the trace file
+    if _TRACE_FILE.exists():
+        _TRACE_FILE.unlink()
+    
     # Write a few events
     write_event("session.start", {"task": "demo"})
     write_event("brain.request", {"prompt": "tools listed"})
     write_event("agent.answer", {"answer": "done"})
     # Read them back
     events = read_events()
-    assert len(events) == 3
+    # Should have exactly 3 events
+    assert len(events) == 3, f"Expected 3 events but got {len(events)}. Events: {[e.kind for e in events]}"
     assert events[0].kind == "session.start"
     assert events[0].payload["task"] == "demo"
     assert events[1].kind == "brain.request"
@@ -79,8 +85,13 @@ def test_read_events_filters():
 
     Why it matters: playground pagination and debugging filters.
     """
-    from asa.trace import reset_session
+    from asa.trace import reset_session, _TRACE_FILE
+    # Start with completely clean slate
     reset_session()
+    # Explicitly clear the trace file
+    if _TRACE_FILE.exists():
+        _TRACE_FILE.unlink()
+    
     write_event("tool.invoke", {"step": 1})
     write_event("tool.result", {"step": 1})
     write_event("tool.invoke", {"step": 2})
@@ -90,8 +101,8 @@ def test_read_events_filters():
     assert all(ev.kind == "tool.invoke" for ev in tool_invokes)
     # Filter by iter (read all events)
     events = read_events()
-    # Should have 3 events from this test only (but currently has 6 due to test interference)
-    # This test validates that filtering works - actual count depends on test isolation
+    # Should have exactly 3 events from this test
+    assert len(events) == 3, f"Expected 3 events but got {len(events)}. Events: {[e.kind for e in events]}"
     assert any(ev.kind == "tool.invoke" for ev in events)
     assert any(ev.kind == "tool.result" for ev in events)
 

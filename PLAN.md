@@ -140,16 +140,24 @@ Same stream feeds the narrated CLI and the HTML playground player.
 - [x] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
 - [x] **M2** Loop skeleton: memory + brain interface + one-shot agent (six concept sub-milestones · closed out)
 - [x] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes (7 concept sub-milestones · closed out)
-- [ ] **M4** **Reading the reply.** Right now the agent takes the model's text and files it untouched — like putting a letter straight into a drawer, never opening it. M4 teaches the agent to read that letter: turn it into one of three things (a command, a broken note that gets a gentle fix-it message, or an answer that ends the run). Once it can read it, it actually acts on commands (runs tools, puts results back).  
+- [x] **M4** **Reading the reply.** Taught the agent to read: parse good commands, handle values safely, treat broken letters as gentle notes, recognize Final Answer, teach the format, and flip the seam so it actually runs tools and feeds observations back.  
   **Sub-milestones (one concept each):**
-  - [ ] **M4.1** _Read a good letter_ — `asa/protocol_react.py` parses a correct `Thought:`/`Action:`/`Action Input:` block into a command the core can understand. Pure function, tests + demo.
-  - [ ] **M4.2** _Make sense of the values_ — turn the text inside `Action Input:` into real Python values safely (no `eval`), handling simple keyword-style args and the plain-string case.
-  - [ ] **M4.3** _A damaged letter isn't a crash_ — malformed/missing pieces produce a gentle "fix your letter" note (failure is data), not an exception. Model can retry.
-  - [ ] **M4.4** _The letter can be an answer_ — recognize `Final Answer:` as its own verdict (end the run) so the vocabulary is ready for M5.
-  - [ ] **M4.5** _Teach the format_ — extend `_compose_system_prompt` with a short "how to write the letter" block (catalogue stays pasted as-is).
-  - [ ] **M4.6** _Open the drawer_ — flip the seam: parse every reply; command → run tool via registry → put result back; broken → put the gentle note back; answer → stop. First real tool run through the loop.
-  - [ ] **M4.7** _Poke the reader_ — `lab/parser_lab.py` (script-first, two-line sys.path) to feed good/broken letters and watch every step; narrated demo.
-  - [ ] **M4.8** _Close-out_ — PLAN tick + `stage:` notes, refresh journey picture at close, full `pytest -q`, truth sweep.
+  - [x] **M4.1** _Read a good letter_ — `asa/protocol_react.py` parses a correct `Thought:`/`Action:`/`Action Input:` block into a command the core can understand. Pure function, tests + demo.
+  - [x] **M4.2** _Make sense of the values_ — turn the text inside `Action Input:` into real Python values safely (no `eval`), handling simple keyword-style args and the plain-string case.
+  - [x] **M4.3** _A damaged letter isn't a crash_ — malformed/missing pieces produce a gentle "fix your letter" note (failure is data), not an exception. Model can retry.
+  - [x] **M4.4** _The letter can be an answer_ — recognize `Final Answer:` as its own verdict (end the run) so the vocabulary is ready for M5.
+  - [x] **M4.5** _Teach the format_ — extend `_compose_system_prompt` with a short "how to write the letter" block (catalogue stays pasted as-is).
+  - [x] **M4.6** _Open the drawer_ — flip the seam: parse every reply; command → run tool via registry → put result back; broken → put the gentle note back; answer → stop. First real tool run through the loop.
+  - [x] **M4.7** _Poke the reader_ — `lab/parser_lab.py` (script-first, two-line sys.path) to feed good/broken letters and watch every step; narrated demo.
+  - [x] **M4.8** _Close-out_ — PLAN tick + `stage:` notes, refreshed journey picture at close, full `pytest -q`, truth sweep.  
+    - stage: M4.1 reader parses good letter (Thought/Action/Action Input) → ToolCall
+    - stage: M4.2 args parsed safely without eval (kwargs/JSON)
+    - stage: M4.3 broken letters → gentle notes (failure is data)
+    - stage: M4.4 Final Answer becomes third verdict
+    - stage: M4.5 how-to-call block added to system prompt
+    - stage: M4.6 seam flipped → agent reads and acts (tools run, observations back)
+    - stage: M4.7 parser lab + narrated demo
+    - stage: M4.8 close-out
 - [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests
 - [ ] **M6** Trace layer: JSONL event schema (CLI + playground share it)
 - [ ] **M7** OllamaBrain + llama3.2:1b: real local run; bench vs Mock

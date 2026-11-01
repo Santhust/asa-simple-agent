@@ -5,7 +5,7 @@ Run it:  python lab/tools_lab.py
 
 tool_lab.py used a stand-in hand; this lab holds the real ones —
 calculator (pure) and clock (read-only) — the same build() factories M3.5
-will register into the phonebook. Six beats:
+registers into the phonebook. Six beats:
 
   1. the golden call        -> the promised arithmetic, ints staying ints
   2. the float truth        -> '/' semantics, and 0.1+0.2 with NO rounding

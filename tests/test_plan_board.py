@@ -198,7 +198,7 @@ def test_factory_shape_and_all_five_hands_in_one_catalogue():
     """Demonstrates the flattened phonebook after M3.4: seven tool entries.
 
     Why it matters: calculator + clock + notes(2) + plan-board(3) is the
-    whole toolbox M3.5's wiring will hand M4's loop. The catalogue must
+    whole toolbox the M3.5 wiring hands M4's loop. The catalogue must
     hold all seven, sorted by name (registry rule), with board_move's id
     documented as integer — the page and the hands cannot drift.
     """

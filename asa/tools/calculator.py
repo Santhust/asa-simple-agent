@@ -30,7 +30,7 @@ One module, five decisions worth reading twice:
    story it would later trust wrongly.
 
 5. **build() is a factory, not an instance.** The Tool dataclass (M3.1) is
-   constructed fresh by `build()`; wiring in M3.5 will loop over factories
+   constructed fresh by `build()`; the agent's wiring loops over factories
    like this one. The registry catalogue renders from THIS description,
    which is why it stays a promise the function keeps.
 

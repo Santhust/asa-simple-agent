@@ -115,7 +115,7 @@ def main() -> None:
     world_a[0].run({"item": "world a's plan"})
     show(world_b[2].run({}), "world_b board_list()   # never saw world a")
     N.why(
-        "State lifetime = the bundle built together. In M3.5 the wiring "
+        "State lifetime = the bundle built together. The M3.5 wiring "
         "gives each agent ITS OWN world; two agents cannot see each other's "
         "plans, and no test can leak into another."
     )

@@ -16,10 +16,10 @@ be verified and a mover nobody listed is meaningless. The registry catalogue
 renders the same data the loop runs, so the manual page can never lie about
 the hands.
 
-`default_tools()` is M3.5's wiring helper: it flattens all four factories
+`default_tools()` is the wiring helper: it flattens all four factories
 into ONE registry built over ONE fresh world. Call it twice, get two
 strangers — the lifetime of the state is the lifetime of the registry, which
-is (when wired by M3.5) the lifetime of an agent session.
+is the lifetime of an agent session.
 """
 
 from __future__ import annotations

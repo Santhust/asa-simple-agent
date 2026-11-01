@@ -75,11 +75,11 @@ def test_invented_parameter_is_rejected_and_names_what_is_allowed():
 def test_factory_shape_and_the_first_pair_in_one_catalogue():
     """Demonstrates build() shape + the two stateless tools rendering together.
 
-    Why it matters: M3.5's system prompt will be built from exactly this —
+    Why it matters: the agent's system prompt is built from exactly this —
     factories registered into a ToolRegistry, catalogue rendered FROM the
     result. Clock's optional param must show as 'optional' so the page
     matches reality, and byte-equality of the section is pinned here so a
-    format accident in M3.5 fails loudly, not silently.
+    format accident there fails loudly, not silently.
     """
     clock = build_clock()
     assert clock.name == "clock"

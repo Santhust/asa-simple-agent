@@ -1,24 +1,32 @@
 #!/usr/bin/env python3
 """Regenerate docs/timeline.html — the offline journey slideshow.
 
-Reads every stage frame in ../out/frames/ (m?-stage-*.png), embeds each PNG as a
-base64 data URI so the HTML is fully self-contained (no network, works from any
-clone even though out/ is gitignored), and titles/captions each stage. Run it at
-every milestone close (or after any SVG refresh) so the picture story stays in
-sync with the drawing.
+Reads every stage frame in ../out/frames/ (m?-stage-*.png), SYNCS them into
+docs/frames/ (committed, so the deck travels with any clone and needs no
+network), and writes a small HTML deck that links each PNG relatively. Titles
+and captions each stage. Run it at every milestone close (or after any SVG
+refresh) so the picture story stays in sync with the drawing.
+
+Why not base64: embedding frames made timeline.html a single 4 MB line — one
+accidental Read/Grep would cost ~1M tokens, and every regeneration rewrote the
+whole blob. Frames-as-files keeps the HTML ~5 KB, makes diffs readable, and the
+generated artifact stays opaque to the agent (verify with wc/slide count, never
+read it).
 
 Usage: python docs/make_timeline.py
 """
 
-import base64
 import html
+import shutil
 import sys
 from pathlib import Path
 
-FRAMES_DIR = Path(__file__).resolve().parent.parent / "out" / "frames"
+ROOT = Path(__file__).resolve().parent.parent
+FRAMES_DIR = ROOT / "out" / "frames"
+DEST_DIR = Path(__file__).resolve().parent / "frames"
 OUT = Path(__file__).resolve().parent / "timeline.html"
 
-TITLE = "asa — the journey in pictures · M1 → M3"
+TITLE = "asa — the journey in pictures · M1 → M3 (complete)"
 
 CAPTIONS = {
     "m1-stage-00.png": "M1 — the shell: run.py → Message → Brain (→ MockBrain) → Completion → Narrator",
@@ -31,6 +39,7 @@ CAPTIONS = {
     "m3-stage-03.png": "M3·3 — the first real hands: calculator (pure, hand parser, no eval, length+depth guards) + clock (read-only, optional utc)",
     "m3-stage-04.png": "M3·4 — the stateful pair: notes (numbered ledger, ×2 hands) + plan-board (stable ids, ×3 hands); state lives OUTSIDE the hands in injected stores",
     "m3-stage-05.png": "M3·5 — the wiring: default_tools() builds one fresh world per agent, and the catalogue (the model's manual page) rides the system prompt — the loop still cannot act",
+    "m3-stage-06.png": "M3 close-out — tools & registry complete: 7 hands, a catalogue in the prompt, one fresh world per agent; the parser is M4's job",
 }
 
 CSS = """
@@ -51,9 +60,19 @@ CSS = """
 """
 
 
-def embed(path: Path) -> str:
-    data = base64.b64encode(path.read_bytes()).decode("ascii")
-    return f"data:image/png;base64,{data}"
+def sync_frames(frames: list) -> None:
+    """Copy the gitignored renders into docs/frames/ and drop stale ones."""
+    DEST_DIR.mkdir(exist_ok=True)
+    wanted = {p.name for p in frames}
+    for path in frames:
+        shutil.copyfile(path, DEST_DIR / path.name)
+    for old in DEST_DIR.glob("m?-stage-*.png"):
+        if old.name not in wanted:
+            old.unlink()
+
+
+def src(path: Path) -> str:
+    return f"frames/{path.name}"
 
 
 def render(frames: list) -> str:
@@ -62,7 +81,7 @@ def render(frames: list) -> str:
         caption = CAPTIONS.get(path.name) or path.stem
         slides.append(
             f'<figure class="slide" data-idx="{n}">'
-            f'<img src="{embed(path)}" alt="stage {n}">'
+            f'<img src="{src(path)}" alt="stage {n}">'
             f"<figcaption>{html.escape(caption)}</figcaption></figure>"
         )
     js = "let i=1;const s=document.querySelectorAll('.slide');const nav=()=>{" \
@@ -91,8 +110,10 @@ def main() -> int:
     if not frames:
         print(f"no stage frames found in {FRAMES_DIR} — render them first (rsvg-convert)", file=sys.stderr)
         return 1
+    sync_frames(frames)
     OUT.write_text(render(frames))
-    print(f"wrote {OUT} with {len(frames)} stage(s) ({OUT.stat().st_size // 1024} KB, self-contained)")
+    size_kb = OUT.stat().st_size / 1024
+    print(f"wrote {OUT} with {len(frames)} stage(s) ({size_kb:.1f} KB) + {len(frames)} PNGs in {DEST_DIR.name}/")
     return 0
 
 

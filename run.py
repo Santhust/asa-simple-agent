@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """asa · a simple agent — command-line front door.
 
-Milestone 3.5 (the wiring): run.py builds the agent WITH its hands — the
-ToolRegistry lands in the system prompt (the model reads the catalogue) and
---no-tools demonstrably builds the honest empty one. The loop still cannot
-ACT: parsing model text into ToolCall is M4; termination beyond the step
-budget is M5. The CLI is the mouthpiece that narrates what it sees: the
+Milestones 3.5–3.6 (hands wired, M3 closed out): run.py builds the agent WITH
+its hands — the ToolRegistry lands in the system prompt (the model reads the
+catalogue) and --no-tools demonstrably builds the honest empty one. The loop
+still cannot ACT: parsing model text into ToolCall is M4; termination beyond
+the step budget is M5. The CLI is the mouthpiece that narrates what it sees: the
 memory BEFORE a run, the mid-run internals the agent narrates itself, and
 the structured result with answer and outcome kept apart.
 """
@@ -54,7 +54,7 @@ def main(argv=None) -> int:
     if args.script:
         brain = MockBrain(script=args.script, model=brain.model)
 
-    N.h1("asa — a simple agent · narrated run (Milestone 3.5: the wiring)")
+    N.h1("asa — a simple agent · narrated run (Milestone 3.6: M3 complete — hands wired)")
     N.kv("brain", brain.describe())
     N.kv("task", repr(args.task))
     N.kv("max_steps", args.max_steps)
@@ -113,9 +113,9 @@ def main(argv=None) -> int:
 
     N.h2("What just happened — and what comes next")
     N.info("The Agent is a text-in/text-out machine with memory. It SEES its hands")
-    N.info("(M3.5: the catalogue lives in the system prompt) but the loop cannot yet")
+    N.info("(M3: the catalogue lives in the system prompt) but the loop cannot yet")
     N.info("act on them — parsing model text into ToolCall is next:")
-    N.info("  M3 close-out · M4 ReAct parser · M5 full loop with Final Answer")
+    N.info("  M4 ReAct parser · M5 full loop with Final Answer")
     N.ok("tools wired, loop honest: the agent sees its hands, touches nothing yet.")
 
     return 0

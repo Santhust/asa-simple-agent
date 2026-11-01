@@ -116,7 +116,7 @@ def test_two_built_worlds_are_independent():
 def test_factory_shape_and_the_pair_in_a_catalogue():
     """Demonstrates the bundle lands in the phonebook whole.
 
-    Why it matters: M3.5 will flatten bundles into the registry. The two
+    Why it matters: the M3.5 wiring flattens bundles into the registry. The two
     names must both exist, sort order must hold, and notes_read (zero
     params) must render with NO Params stub — the M3.2 zero-param rule
     meeting a real stateful tool.

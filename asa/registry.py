@@ -6,7 +6,7 @@ question that is easy to undervalue: *how does the model learn about them?*
 
 That last one is the lesson of this module. A model cannot browse our code.
 The ONLY documentation it will ever have is `render_catalogue()` — the text
-that lands in the system prompt in M3.5. This is "documentation-first": the
+that lands in the agent's system prompt. This is "documentation-first": the
 model can only use what it has been told exists, so the catalogue is not
 decoration, it is the model's entire world of capabilities. (And because the
 Tool dataclass keeps documentation and implementation in one object, the two
@@ -73,8 +73,8 @@ class ToolRegistry:
     """A named collection of Tools: register at build time, get at run time.
 
     One registry = one agent's hands. Nothing here talks to the brain or the
-    loop — it stores, lists, and renders. (M3.5 will wire the catalogue into
-    the Agent's system prompt; M4 will call get() to resolve ToolCalls.)
+    loop — it stores, lists, and renders. (The Agent pastes the catalogue into
+    its system prompt; the M4 loop will call get() to resolve ToolCalls.)
     """
 
     def __init__(self) -> None:
@@ -119,7 +119,7 @@ class ToolRegistry:
         """Render the manual page: one section per tool, sorted by name.
 
         This is the text that becomes the model's knowledge of its own hands
-        (the system prompt in M3.5). It is rendered FROM the Tool's schema —
+        (the agent's system prompt). It is rendered FROM the Tool's schema —
         never typed separately — so documentation and implementation cannot
         drift. Params render in declared order (a Tool's own, deterministic
         choice); sections render in name order (ours).

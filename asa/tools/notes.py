@@ -11,14 +11,14 @@ data somewhere between calls, and WHERE it lives is the whole lesson:
 2. **Factory-injected store — build() makes a fresh world every time.**
    `build(store=None)` creates a new NotesStore when none is given. So the
    LIFETIME of the notes is the lifetime of the bundle of tools built
-   together — which in M3.5 becomes "as long as the agent session lasts".
+   together — which becomes "as long as the agent session lasts".
    Two calls to build() = two independent notebooks; no module globals ever,
    so tests just build anew and stay deterministic.
 
 3. **Stateful tools come as BUNDLES.** M3.3's build() returned one Tool;
    this build() returns a LIST of two — notes_write and notes_read —
    because a store with only a writer can never be verified and one with
-   only a reader can never grow. The wiring in M3.5 flattens the bundles.
+   only a reader can never grow. The agent's wiring flattens the bundles.
 
 4. **Identity is the entry NUMBER — stable forever.** Entries are numbered
    monotonically (1, 2, 3…never reused), like the plan-board's ids

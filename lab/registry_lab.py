@@ -10,13 +10,13 @@ model. Four beats:
   1. register two tools, list them      -> sorted, order-of-registration gone
   2. register a duplicate               -> ValueError: OUR build-time bug
   3. look up a misspelled name          -> None: the MODEL'S run-time miss
-  4. render the catalogue               -> the text the model will live on
+  4. render the catalogue               -> the text the model lives on
 
 Beat 3 next to beat 2 is the lesson: two "failures", two philosophies.
 Ours explode at build time (tests); the model's become text it can read.
 
-Then beat 4 prints the whole catalogue as the model will see it in M3.5 —
-this lab doubles as the FORMAT DESIGN REVIEW for that page.
+Then beat 4 prints the whole catalogue as the model sees it in the agent's
+system prompt — this lab doubles as the FORMAT DESIGN REVIEW for that page.
 """
 
 import sys
@@ -98,8 +98,8 @@ def main() -> None:
     N.h2("4 · render the catalogue — exactly what the model will read")
     N.why(
         "Rendered FROM the schema, never typed alongside it: Tool documentation and "
-        "implementation live in one object, so this page cannot lie. In M3.5 this "
-        "block lands in the system prompt; M4 adds the 'how to call' instructions."
+        "implementation live in one object, so this page cannot lie. The M3.5 wiring "
+        "pastes this block into the system prompt; M4 adds the 'how to call' instructions."
     )
     N.code(registry.render_catalogue().rstrip())
 

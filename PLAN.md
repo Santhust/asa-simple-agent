@@ -44,13 +44,13 @@ verbose narration, checkpointing with the user after each milestone.
 | Module | Role | Lesson |
 |---|---|---|
 | memory.py    | ContextWindow: append, token estimate, trim-on-overflow | how an agent "remembers" |
-| brain.py     | Brain interface + zoo (Mock/Ollama/Gemini/GPT2) | engine-agnostic design |
-| protocol_react.py  | parse Thought:/Action:/Action Input: (+ error repair) | text -> structure |
-| protocol_native.py | native tool declarations + FunctionCall -> ToolCall | API function calling |
+| brain.py     | Brain interface + MockBrain (Ollama/Gemini/GPT2 planned M7/M8/M10) | engine-agnostic design |
+| protocol_react.py  | parse Thought:/Action:/Action Input: (+ error repair) — **planned M4** | text -> structure |
+| protocol_native.py | native tool declarations + FunctionCall -> ToolCall — **planned M9** | API function calling |
 | tool.py / tools/   | Tool dataclass, JSON-schema params; Calculator, Notes, clock, plan-board | the agent's "hands" |
 | registry.py  | register/list/lookup; renders catalogue into prompt | documentation-first tools |
 | agent.py     | the loop; termination control; narration hooks | orchestration |
-| trace.py     | JSONL event for every internal step, timestamped | observability / glass-box |
+| trace.py     | JSONL event for every internal step, timestamped — **planned M6** | observability / glass-box |
 
 ### Memory / eviction policy (decided 2026-09, from the M2.1 discussion)
 - M2's trim() is **age-first** (system sacred · newest kept) — the right default and the
@@ -61,142 +61,53 @@ verbose narration, checkpointing with the user after each milestone.
   turns, and then "drop the biggest" beats "drop the oldest".
 - "LLM context is a cache" (token budget, eviction, redundancy) becomes a docs topic (M11).
 
-### M2 progress & decisions (2026-09 · session-compaction safety)
-Running as concept sub-milestones (working-rhythm addendum in AGENTS.md); every step = an
-atomic commit + (for functional steps) an SVG stage + PNG frame in `out/frames/`:
-- [x] M2.0  working-rhythm addendum written to AGENTS.md
-- [x] M2.1  asa/memory.py — ContextWindow (append · token_count · trim, age-first)
-- [x] M2.2  tests/test_memory.py (10 tests) + conftest.py
-- [x] M2.3  asa/agent.py — Agent skeleton: full hop Task→Memory→Brain→memory + loop seam
-- [x] M2.4  AgentResult(text, terminate_reason, steps, tokens) + tests/test_agent.py (10)
-- [x] M2.5  run.py rewritten agent-driven (+ --max-steps, --script, main(argv)) + tests/test_cli.py
-- [x] M2.5b --script now declares + *reports louder* the MockBrain override (see below)
-- [x] M2.6  close-out — pytest 26 green · PLAN.md M2→[x] · docs/timeline.html (5 stages,
-           self-contained) · SVG badge "M2 complete ✓" · one narrated `--explain` run · journey.gif
-Recorded decisions:
-- **AgentResult**: run() returns answer AND outcome, kept apart (status bookkeeping never
-  pollutes model text). M2 always reports terminate_reason="max_steps"; M5 adds
-  "final_answer"/failure cases without changing the shape.
-- **--script policy**: a TEACHING override. Today it swaps the selected brain for a
-  scripted MockBrain with a loud warning; decided 2026-09: when real brains exist
-  (M7/M8), keep **warn + override** (lowest surprise) rather than a hard error —
-  revisit only if a silent misuse actually bites.
-- **CLI narration voice**: the Agent narrates its own mid-run internals; run.py adds only
-  gauges + the result block (no duplicated transcript).
-Session-start anchors after M2: git HEAD ≈ close-out commit · diagram badge "M2 complete ✓" ·
-frames m1-stage-00 + m2-stage-01/03/05/06 (out/, gitignored) · journey.gif in out/.
+### M2 (closed) — decisions archived
+Full progress + decisions: `docs/decisions-archive.md`. Contracts that still bind:
+run() returns **answer and outcome separately** (AgentResult); `--script` is a loud,
+warn-and-override teaching switch; the Agent narrates its internals, run.py only gauges.
 
-### M3 progress & decisions (2026-09 · tools & registry — the agent's hands)
-Same rhythm: one concept per step · tests + a narrated demo every step · atomic commit ·
-SVG stage + frame for functional steps.
-- [x] M3.0  this map + the two decisions written down (compaction insurance)
-- [x] M3.1  asa/tool.py — Tool + ToolCall + ToolResult + mini-schema validation
-           (validate before executing; failure is data, never an exception) + lab/tool_lab.py
-- [x] M3.2  asa/registry.py — register/list/lookup + render_tool_catalogue() (documentation-first)
-- [x] M3.3  asa/tools/ stateless pair — Calculator (pure) + clock (read-only env)
-- [x] M3.4  asa/tools/ stateful pair — Notes (append/read) + plan-board (shared mutable)
-- [x] M3.5  agent wiring — Agent(registry=...): the catalogue lands in the system prompt, so the
-           agent SEES its hands; the loop still cannot act on them (that is M4's parser)
-- [ ] M3.6  close-out — pytest green · PLAN M3→[x] · SVG pass (Registry + tools turn solid in the
-           loop row; protocol/ToolCall stay dashed until M4/M5) · frame + timeline regen ·
-           journey.gif · one narrated run · final commit
-Recorded decisions (2026-09):
-- **Where tools live**: package `asa/tools/`, one module per tool (Calculator, clock, Notes,
-  plan-board) — matches the module table and M12's playground.
-- **M3.5 is IN**: the registry is wired into the Agent inside M3 (catalogue → system prompt).
-  Rationale: it completes the registry lesson ("the model learns what exists") without
-  needing the ReAct parser; the agent touching tools is a *seam*, not a lie.
-- **Schema shape**: `params` is a mini JSON-schema subset (types number/integer/string/boolean
-  + required + help), deliberately convertible into a real
-  `{"type":"object","properties":…,"required":[…]}` for M9's native protocol — decide now,
-  repaint never.
-- **Failure is data**: a bad arg or a tool that raises returns `ToolResult(is_error=True)`;
-  the error text becomes an Observation the model can react to. The agent never dies from a
-  tool call (real models typo).
-- `number` accepts int|float and coerces to float; unknown args are errors (typo guard).
-- `lab/` layer opens in M3.1 with lab/tool_lab.py (narrated, one internal per script; a 2-line
-  `sys.path` bootstrap is the convention — noted in AGENTS.md in M3.2, once a second lab,
-  lab/registry_lab.py, existed).
-- **M3.2 recorded decisions (2026-10):**
-  - Registry = **phonebook, not dispatcher**: `register/get/names/len/contains` only —
-    no `registry.run()`; resolution (`get`) and execution (`Tool.run`) stay two doors in
-    two modules, and the M4 loop composes them.
-  - Two failure timings, two philosophies: **duplicate name → ValueError** (a duplicate is
-    OUR build-time bug, like tool.py's unknown schema type — loud in tests, never silent
-    shadowing); **missed lookup → None** (a miss is the MODEL's run-time event — M4 phrases
-    it as an error Observation, the failure-is-data philosophy one layer up).
-  - **Sorted catalogue** (`names()` + sections in name order): registration order must not
-    leak into the prompt — golden-trace determinism for M5. Params render in the Tool's own
-    declared order. Optional params are marked `optional` so the catalogue cannot lie.
-  - **Catalogue format locked** (the M3.5 system-prompt section): `## Available tools` →
-    one `### name` block with description + `Params:` lines `- p (type, required|optional): help`;
-    zero-param tools get no Params stub; an EMPTY registry renders a sentence, never `""`.
-    The "how to call" instructions stay OUT — that is M4's protocol layer's job; the page
-    documents only WHAT exists. Exact format visible in lab/registry_lab.py beat 4.
-- **M3.3 recorded decisions (2026-10):**
-  - **No eval(), ever** — a tool must be exactly as wide as its documentation says. The
-    catalogue promises arithmetic; `eval()` would deliver arbitrary Python, making the
-    narrowness a fiction. Instead: a hand-rolled recursive-descent parser (numbers,
-    + - * /, parens, unary minus) told as the "every internal visible" lesson; the
-    real-world `ast`-whitelist idiom gets a `why()` mention, not the teaching pick.
-  - **Honest numerics, zero cosmetic rounding**: ints stay ints (`2+3 = 5`), `/` is
-    Python (`7/2 = 3.5`, `8/2 = 4.0`), `0.1+0.2` shows `0.30000000000000004` — the model
-    sees IEEE truth rather than a rounded story it would later trust.
-  - **Resource limits are tool business** (the mini-schema cannot say them): expression
-    capped at 200 chars, paren nesting at 32 — a recursive parser can be stack-crashed
-    by adversarial input, and "says no as text" preserves failure-is-data. Test lesson
-    found live: size the depth-guard fixture UNDER the length cap, or the wrong guard
-    fires first (the failed test caught the fixture, not the tool).
-  - **Clock = first real optional param** (`utc` bool, default local); tests pin SHAPE
-    (ISO regex + label), never a timestamp — the "assert structure, not wall-clock"
-    philosophy written down before M5's golden traces lean on it.
-  - Tool modules each expose **`build() -> Tool`**; M3.5's wiring will loop over factories.
-  - Parser raises `_ExpressionError` (readable, internal); the tool function phrases it
-    into `ToolResult(is_error=True)` — message policy lives at the boundary, the parser
-    stays a pure mechanism.
-- **M3.4 recorded decisions (2026-10, locked with the user in plan):**
-  - **State lives OUTSIDE the hands, factory-injected** — `build(store=None)` constructs a
-    fresh store per call; state lifetime becomes the M3.5 agent session; zero module
-    globals; tests build fresh worlds and cannot leak. `build()` twice = two strangers.
-  - **Stateful tools ship as BUNDLES** — notes = 2 hands (`notes_write`/`notes_read`);
-    plan-board = 3 hands (`board_add`/`board_move`/`board_list`) over ONE Board. A store
-    with only a writer can't be verified; splitting the trio lets them drift. M3.5's
-    wiring flattens the bundles.
-  - **Stable ids, never indices** — the board's ids (and notes' numbering) are monotonic
-    and never reused; "move item 2" survives every later move. The index-shift bug is
-    the narrated `why()` beat in lab/state_lab.py, not a live trap.
-  - **Named store classes** — `NotesStore` (grow-only list, returns the entry number) and
-    `Board` (text per id, place per id, insertion order per column, `(empty)` renderer).
-    Readable structure over dict-magic.
-  - **Enum vocab is the tool's business** — todo/doing/done (+ list's `all` view word)
-    checked in the tool with refusals that NAME the vocabulary (the schema can't say
-    enums; same lesson as calculator's caps). `board_move` is the first real `integer`
-    param — bools/floats/strings refused at the M3.1 boundary before state mutates.
-  - **No timestamps in notes** — entries are numbered plain text (the clock covers
-    "when"); a refused write must not burn a number (asserted: numbering restarts at 1).
-- **M3.5 recorded decisions (2026-10, locked with the user in plan):**
-  - **`Agent(registry=None)` → `default_tools()`** — "an agent comes WITH its hands":
-    one fresh world per agent, session-lifetime state (M3.4's rule automatic at the
-    wiring layer). The no-tools lesson stays reachable by passing an explicit empty
-    `ToolRegistry()` — which run.py's new `--no-tools` wires transparently.
-  - **`default_tools()` is the bundle-flattener** (asa/tools/__init__.py): flattens the
-    four factories into one registry over one fresh world; call it twice = two strangers.
-  - **The catalogue is PASTED, not retyped** — `_compose_system_prompt()` appends
-    `registry.render_catalogue()` after the caller's system text (composition, never
-    replacement), byte-equality asserted so prompt-side and loop-side documentation
-    can never drift. M4 extends THAT helper with "how to call" instructions.
-  - **The SEAM stays honest, pinned by a test**: a MockBrain writing
-    `Action: calculator(...)` is memorized verbatim — no tool runs, terminate_reason
-    stays "max_steps". M4's flip of exactly this behavior will be test-visible.
-  - Narration stays agent-side (M3.2's registry-stays-pure rule): run() announces
-    "tools wired · N tools" and, honestly, that the loop cannot act on them yet.
-  - M2-carryover fix: test_agent's "brain receives system then task" equality on the
-    bare prompt became a startswith + catalogue-inclusion check — the prompt is
-    composed now, and the test describes the new truth (role order still proven).
+### M3 progress & decisions (2026-09/11 · tools & registry — the agent's hands)
+Closed 2026-11 · 7 concept sub-milestones · 86 tests / 10 modules · 4 narrated labs.
+Full rationale: `docs/decisions-archive.md` (this section is the index M4 needs).
+- [x] M3.0 map + decisions · M3.1 Tool/ToolCall/ToolResult · M3.2 ToolRegistry + catalogue
+- [x] M3.3 calculator + clock · M3.4 notes + plan-board (state outside the hands)
+- [x] M3.5 wiring: default_tools → system prompt (the seam; the loop still cannot act)
+- [x] M3.6 close-out — pytest green · PLAN tick · SVG final pass (canvas 882) · timeline
+       split (11 stages) · journey.gif · narrated run · truth sweep · token-hygiene policy
 
-Session-start anchors after M3.5: git HEAD ≈ M3.5 commit · diagram badge "M3 · 5 of 7 done" ·
-frames m3-stage-01..05 (out/, gitignored) · 86 tests green · next up = M3.6 close-out (badge
-flip to "M3 complete ✓", timeline + journey.gif refresh, narrated run) — then M4 (ReAct parser).
+Contracts M4/M5 depend on (one line each; why in the archive):
+- Tools live in `asa/tools/`, one module per tool, each exposing `build() -> Tool`.
+- Schema: mini JSON-schema subset (number/integer/string/boolean + required + help),
+  convertible to real JSON Schema for M9.
+- Failure is data: bad args / raising tools → `ToolResult(is_error=True)`; the text becomes
+  an Observation. `number` accepts int|float→float; unknown args are errors.
+- Registry = phonebook, not dispatcher: register/get/names/len/contains only; duplicate
+  name → ValueError (build-time bug), missed lookup → None (the model's run-time event).
+- Catalogue: sorted by name, params in declared order, optional marked, empty renders a
+  sentence; format locked in `registry.py`; "how to call" is M4's job.
+- No eval(): calculator is a hand-rolled recursive-descent parser; honest numerics; caps
+  (200 chars / 32 parens) are tool business, refused as text.
+- State lives OUTSIDE the hands (`build(store=None)`); stateful bundles (notes ×2,
+  board ×3); stable ids, never indices; enum vocab checked in the tool.
+- `Agent(registry=None)` → `default_tools()` (one fresh world per agent); an explicit empty
+  registry is the no-tools agent (`run.py --no-tools`).
+- Catalogue is PASTED into the system prompt (`_compose_system_prompt`), never retyped;
+  byte-equality asserted. **M4 extends THAT helper with "how to call" instructions.**
+- The SEAM is pinned by a test: an `Action: …` reply is memorized verbatim, no tool runs,
+  `terminate_reason` stays `max_steps` — M4's flip will be test-visible.
+
+M3.6 recorded decisions (2026-11):
+- A close-out is a truth sweep (picture, anchors, AGENTS.md, docstrings) in one atomic
+  commit — no behaviour change, no new tests.
+- Token hygiene is policy: the SVG/frame/timeline picture refreshes at MILESTONE CLOSE (or
+  when a box is added), not per sub-milestone; each step leaves a one-line `stage:` note.
+  Generated artifacts are opaque (verify with wc/identify, never read); never re-read a
+  file after editing; the timeline is a small HTML + committed `docs/frames/`.
+
+Session-start anchors after M3.6: git HEAD ≈ M3.6 commit · diagram badge "M3 complete ✓"
+(canvas 882) · frames m3-stage-01..06 (out/, gitignored) · `docs/frames/` 11 PNGs · timeline
+11 stages · 86 tests green · next up = **M4** (`protocol_react.py`; the SEAM is the landing
+site; one-line stage notes go in PLAN.md).
 
 ### Trace-event schema (JSONL; one JSON per line)
 `{ts, iter, kind, payload}` with kinds: session.start, context.add, context.trim,
@@ -228,7 +139,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
 - [x] **M0** Rename dir to `asa`; write AGENTS.md + PLAN.md
 - [x] **M1** Shell: venv, requirements, run script, first narrated MockBrain hello
 - [x] **M2** Loop skeleton: memory + brain interface + one-shot agent (six concept sub-milestones · closed out)
-- [~] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes (7 concept sub-milestones · map below, started)
+- [x] **M3** Tools & registry: Tool dataclass, JSON schema, catalogue, calculator + notes (7 concept sub-milestones · closed out)
 - [ ] **M4** protocol_react: parser w/ error repair; unit tests; lab/parser_lab.py
 - [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests
 - [ ] **M6** Trace layer: JSONL event schema (CLI + playground share it)
@@ -253,4 +164,8 @@ Same stream feeds the narrated CLI and the HTML playground player.
 - opencode context window ~200K tokens; compaction may mangle earlier discussion.
 - On any new session / drift: re-read AGENTS.md (auto-loaded) + this PLAN.md;
   check milestone status above; resume at the oldest unchecked milestone.
+- Deep history (M1/M2/M3 rationale) is in `docs/decisions-archive.md` — read on demand,
+  not every session. The M3 section above is the compressed index M4 needs.
+- Each sub-milestone leaves a one-line `stage:` note here; the SVG/timeline picture is
+  refreshed at milestone close (token hygiene, M3.6).
 - Commit nothing unless the user asks; keep tests green after every milestone.

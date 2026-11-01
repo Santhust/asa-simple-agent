@@ -11,8 +11,8 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
 - Loop: Task -> ContextWindow -> Brain -> text/native -> protocol -> ToolCall
        -> ToolRegistry -> tool runs -> observation back into context
        terminate on `Final Answer:` | max_steps | failure policy.
-- `asa/` package: memory.py, tool.py, registry.py, protocol_react.py, protocol_native.py,
-  brain.py, agent.py, trace.py, `tools/` + `lab/` (single-part learning scripts).
+- `asa/` package: memory.py, tool.py, registry.py, brain.py, agent.py, `tools/` + `lab/`
+  (single-part scripts). Planned: protocol_react.py (M4), protocol_native.py (M9), trace.py (M6).
 
 ## Brain zoo (config-driven: model is a string; swappable, agent code identical)
 - `MockBrain`   : deterministic, no deps (tests, offline demo, golden traces)
@@ -34,7 +34,8 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
 
 ## Habits (user-mandated)
 - Small educative milestones; tests + a narrated demo at EVERY step; checkpoint with the user.
-- Re-orient from PLAN.md / AGENTS.md in new sessions (context compaction erases the plan).
+- Re-orient from PLAN.md / AGENTS.md in new sessions (context compaction erases the plan);
+  `docs/decisions-archive.md` holds M1/M2/M3 detail — read it only on demand.
 - Never skip tests; state what each test demonstrates and why it matters.
 - Verbose outputs: explain what is happening, how, and why — all details.
 
@@ -49,17 +50,31 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
   `docs/m1-diagram.svg` (plus `out/frames/` PNGs and `git log` per-step commits); the
   current in-flight step is recorded in PLAN.md.
 - Commit after EVERY sub-milestone: small, atomic, one-concept commits.
-- The story diagram is a living artifact: refresh `docs/m1-diagram.svg` whenever functionality
-  changes (solid = built, dashed = planned) so every step has a graphical before/after.
-  Rasterize one PNG frame per stage into `out/frames/` (gitignored; rsvg-convert), and stitch
-  the journey with `magick -delay 150 out/frames/*.png journey.gif`. The git history of the
-  SVG is the durable timeline.
-- At milestone close, regenerate `docs/timeline.html` — an offline prev/next slideshow of the
-  frames with one caption per stage (seed of the playground's animated trace player, M12).
+- The story diagram is a living artifact, refreshed at MILESTONE CLOSE (and when the
+  architecture gains a box) — not after every sub-milestone: pixels are cheap, re-reading the
+  SVG is not. Each step instead appends a one-line `stage:` note to PLAN.md; those notes
+  become the SVG stage-log rows at close-out. (Why: token hygiene, M3.6.)
+- Close-out picture pass: refresh `docs/m1-diagram.svg` (solid = built, dashed = planned),
+  rasterize one PNG frame per stage into `out/frames/` (gitignored; `rsvg-convert`), sync them
+  into `docs/frames/` (committed), stitch
+  `magick -delay 150 out/frames/*.png -background '#fbfbf9' -gravity north -extent 1060x882
+  out/journey.gif`, and regenerate `docs/timeline.html` — a small offline prev/next deck that
+  links `docs/frames/` (seed of the playground's animated trace player, M12). The SVG's git
+  history is the durable timeline.
+
+### Token hygiene (user-mandated · M3.6)
+- Generated artifacts are OPAQUE: `docs/timeline.html`, `docs/frames/*.png`, `out/journey.gif`,
+  `out/frames/*.png` — never Read/Grep them; verify with `wc -c`, slide counts, `identify`.
+- Never re-read a file after editing: prove the edit with `git diff --stat`, `wc -l`,
+  `grep -c`, or `sed -n`. Reading generated blobs is the one unrecoverable token sink.
+- Cap narrated/`--explain` output (`| sed -n '1,20p'`) unless the full transcript IS the lesson.
+- Commit bodies: why-paragraph + ≤3 bullets. Verify with `git show --stat`, not by re-reading.
+- Full `pytest -q` once per close-out; targeted tests while iterating.
 
 ## Commands
-(CANONICAL to be frozen in Milestone 1)
-- `python run.py --task "..." [--brain <name>] [--explain] [--trace out/t.jsonl]`
-- `python bench.py --task "..." `         (same task across brains, side by side)
-- `python serve.py`                        (live SSE mode for the HTML playground)
-- `python -m pytest`                       (tests; run after every milestone)
+(CANONICAL — kept true at every close-out)
+- `python run.py --task "..." [--brain mock] [--model TAG] [--max-steps N] [--script "…" …]
+  [--no-tools] [--explain] [--no-color]`   (today's real flags; `--trace` lands in M6)
+- `python bench.py --task "..."`           (planned M7+ — same task across brains, side by side)
+- `python serve.py`                        (planned M13 — live SSE mode for the playground)
+- `python -m pytest`                       (86 tests; run after every sub-milestone)

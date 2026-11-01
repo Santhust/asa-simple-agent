@@ -144,8 +144,8 @@ def test_wrong_and_invented_arguments_are_rejected_before_the_function():
 def test_factory_shape_and_phonebook_roundtrip():
     """Demonstrates build() + registry compose — the M3.5 wiring is one line.
 
-    Why it matters: M3.5 will loop over factory functions like THIS one and
-    register the results. The Tool must carry the exact name/schema the
+    Why it matters: the M3.5 wiring loops over factory functions like THIS one and
+    registers the results. The Tool must carry the exact name/schema the
     catalogue will render, and then run correctly when fetched from a real
     registry — the phonebook and the hand simply click together.
     """

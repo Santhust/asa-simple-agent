@@ -57,7 +57,7 @@ class _Parser:
     """A deliberately tiny arithmetic evaluator: numbers, + - * / and parentheses.
 
     It exists so the lab can show a *stateful-looking* success with a *safe*
-    implementation. (A real Calculator tool in M3.3 will live in asa/tools/.)
+    implementation. (The real Calculator tool lives in asa/tools/calculator.py.)
     """
 
     def __init__(self, text: str) -> None:

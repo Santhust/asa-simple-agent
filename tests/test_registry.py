@@ -1,7 +1,7 @@
 """Tests for the ToolRegistry — proving the four M3.2 lessons.
 
 Each test names the lesson it demonstrates and why it matters for the agent
-loop that M3.5/M4 will build on top of this.
+loop that M4 will build on top of this.
 """
 
 import pytest
@@ -135,7 +135,7 @@ def test_catalogue_documents_name_description_and_params():
     """Demonstrates documentation-first: the catalogue is rendered FROM the tool.
 
     Why it matters: this page is the ONLY knowledge the model will ever have
-    of its capabilities (it lands in the system prompt in M3.5). It must
+    of its capabilities (it lands in the agent's system prompt). It must
     carry the Tool's name, its description, and every param as declared —
     schema-data becomes prompt-text, so the two can never drift apart.
     """
@@ -180,7 +180,7 @@ def test_catalogue_empty_registry_is_a_paragraph_not_an_empty_string():
     """Demonstrates: an empty registry still renders a sentence.
 
     Why it matters: the catalogue lands in the system prompt. An empty
-    string would put a blank section into the prompt for M3.5's agent and
+    string would put a blank section into the prompt for the agent and
     (a) puzzle the model, (b) break M5's golden expectations. The empty case
     is a designed message, not the absence of one.
     """

@@ -41,6 +41,7 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
 
 ### Working rhythm (user-mandated · addendum 2026-09)
 Learning-paced, never product-paced. Rules that must not be shortcut:
+- **Story first, names second**: When explaining a milestone/step/intern or laying out work, start with a plain-language story — situation → what changes → in one breath. Steps come as nouns/verbs, not jargon. Technical names (classes/modules/tests) are a quiet second layer. The value is the narrative style, not any particular analogy.
 - Sub-milestones: every milestone is split into concept-based sub-milestones. In ONE step,
   implement a single concept, explain what/how/why, then STOP — the user reads the
   generated file(s), we build understanding together, then start the next sub-milestone.

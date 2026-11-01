@@ -18,7 +18,9 @@ from dataclasses import dataclass
 from . import narrate as N
 from .brain import Brain, Completion
 from .memory import ContextWindow
+from .protocol_react import parse
 from .registry import ToolRegistry
+from .tool import ToolCall
 from .tools import default_tools
 
 
@@ -123,17 +125,52 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             if self.narrate:
                 self._narrate_context()
 
-            # ---- THE SEAM (M4 / M5) ----------------------------------------
-            #   after each brain response the real loop will:
-            #     1. let protocol_react parse Thought:/Action:/Action Input:
-            #     2. if Action: resolve + run the tool via the registry, store
-            #        the Observation back into memory, and keep looping
-            #     3. break as soon as 'Final Answer:' is seen or steps run out
-            #   None of that exists yet — today we just ask and memorize.
+            # ---- THE SEAM (M4.6) ----------------------------------------
             completion = self.brain.complete(self.memory.messages)
-            self.memory.add("assistant", completion.text)
+            reply = completion.text
+            self.memory.add("assistant", reply)
             if self.narrate:
                 self._narrate_completion(completion)
+
+            verdict = parse(reply)
+            if verdict.kind == "thought_action" and verdict.action is not None:
+                # Run the tool, put Observation back into memory
+                call: ToolCall = verdict.action
+                tool = self.registry.get(call.name)
+                if tool is None:
+                    obs = f"Observation: no tool named '{call.name}'. Available: {', '.join(self.registry.names())}"
+                    self.memory.add("user", obs)
+                    if self.narrate:
+                        N.info(f"tool lookup failed · {obs}")
+                    continue  # keep looping so the model can try again
+                try:
+                    result = tool.run(call.args)
+                    obs = f"Observation: {result.output}"
+                    if result.is_error:
+                        obs = f"Observation (error): {result.output}"
+                except Exception as e:
+                    obs = f"Observation (error): tool '{call.name}' crashed: {e}"
+                self.memory.add("user", obs)
+                if self.narrate:
+                    N.info(f"tool ran · {call.name} -> {obs[:80]}...")
+                continue  # loop again with observation in memory
+            elif verdict.kind == "error" and verdict.error is not None:
+                obs = f"Observation: {verdict.error.message}"
+                self.memory.add("user", obs)
+                if self.narrate:
+                    N.info(f"parse error -> observation back to model")
+                continue
+            elif verdict.kind == "final_answer":
+                self.result = AgentResult(
+                    text=verdict.answer or reply,
+                    terminate_reason="final_answer",
+                    steps=self.step_count,
+                    tokens=self.memory.token_count(),
+                )
+                return self.result
+            else:
+                # Unclear reply — just stop on budget? For now treat as max_steps path
+                pass
 
         self.result = AgentResult(
             text=self.memory.messages[-1].content,

@@ -125,26 +125,24 @@ def test_an_explicit_empty_registry_gives_the_honest_paragraph():
 
 
 def test_seam_stays_honest_a_faked_tool_call_is_just_text():
-    """Demonstrates THE M3.5 boundary: the loop cannot act, and admits it.
+    """Demonstrates M4.6 flip: the agent now READS replies and acts.
 
-    Why it matters: the prompt tells the model it has hands; the loop does
-    not yet honor that — a model writing 'Action: calculator(...)' gets
-    its TEXT memorized, no tool runs, nothing executed. Pinning the 'still
-    just words' behavior makes M4's flip a loud, test-visible event
-    instead of a silent one.
+    Why it matters: the old boundary (memorize verbatim, no tool runs)
+    is gone. A malformed Action without Action Input is parsed as a
+    gentle error; the agent feeds an Observation back and keeps looping.
+    With max_steps exhausted it ends on budget (M5 owns fuller control).
     """
     agent = Agent(
         MockBrain(script=["Action: calculator(expression='2+2')"]),
         narrate=False,
     )
     result = agent.run("what is two plus two?")
-    assert result.terminate_reason == "max_steps"  # no 'final_answer' machinery exists
-    assert result.text == "Action: calculator(expression='2+2')"  # memorized verbatim
-    # the world is untouched: the faked call never ran
-    no_trace = agent.registry.get("notes_read").run({}).output
+    assert result.terminate_reason == "max_steps"
+    # The reply was READ (not just stored) — we got an Observation back
+    assert any("Observation" in m.content for m in agent.memory.messages)
+    # The world still behaves normally (tool exists and works)
     calculator_probe = agent.registry.get("calculator").run({"expression": "9-9"})
-    assert "9-9 = 0" in calculator_probe.output  # the calculator answered FRESH
-    assert result is not None and no_trace is not None  # and nothing else happened
+    assert "9-9 = 0" in calculator_probe.output
 
 
 def test_token_count_includes_the_catalogue():

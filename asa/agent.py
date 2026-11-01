@@ -22,6 +22,7 @@ from .protocol_react import parse
 from .registry import ToolRegistry
 from .tool import ToolCall
 from .tools import default_tools
+from .trace import write_event
 
 
 @dataclass
@@ -132,10 +133,17 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             if self.narrate:
                 self._narrate_completion(completion)
 
+            write_event("brain.request", {"prompt": self.memory.messages})
+            write_event("brain.response", {"text": reply, "model": completion.model})
+
             verdict = parse(reply)
+            write_event("protocol.raw", {"raw": reply})
+
             if verdict.kind == "thought_action" and verdict.action is not None:
                 # Run the tool, put Observation back into memory
                 call: ToolCall = verdict.action
+                write_event("protocol.parsed", {"kind": verdict.kind, "tool": verdict.action.name, "args": verdict.action.args})
+                write_event("tool.lookup", {"name": call.name})
                 tool = self.registry.get(call.name)
                 if tool is None:
                     obs = f"Observation: no tool named '{call.name}'. Available: {', '.join(self.registry.names())}"
@@ -143,6 +151,7 @@ If you see a gentle note about fixing your letter, correct the format and try ag
                     if self.narrate:
                         N.info(f"tool lookup failed · {obs}")
                     continue  # keep looping so the model can try again
+                write_event("tool.invoke", {"name": call.name, "args": call.args})
                 try:
                     result = tool.run(call.args)
                     obs = f"Observation: {result.output}"
@@ -150,27 +159,30 @@ If you see a gentle note about fixing your letter, correct the format and try ag
                         obs = f"Observation (error): {result.output}"
                 except Exception as e:
                     obs = f"Observation (error): tool '{call.name}' crashed: {e}"
+                write_event("tool.result", {"name": call.name, "output": result.output if 'result' in locals() else str(obs), "error": getattr(result, 'is_error', False) if 'result' in locals() else False})
                 self.memory.add("user", obs)
                 if self.narrate:
                     N.info(f"tool ran · {call.name} -> {obs[:80]}...")
                 continue  # loop again with observation in memory
             elif verdict.kind == "error" and verdict.error is not None:
+                write_event("protocol.error", {"message": verdict.error.message})
                 obs = f"Observation: {verdict.error.message}"
                 self.memory.add("user", obs)
                 if self.narrate:
                     N.info(f"parse error -> observation back to model")
                 continue
             elif verdict.kind == "final_answer":
+                write_event("agent.answer", {"answer": verdict.answer or reply, "steps": self.step_count})
                 self.result = AgentResult(
                     text=verdict.answer or reply,
                     terminate_reason="final_answer",
                     steps=self.step_count,
                     tokens=self.memory.token_count(),
                 )
+                write_event("loop.terminate", {"reason": "final_answer"})
                 return self.result
-            else:
-                # Unclear reply — just stop on budget? For now treat as max_steps path
-                pass
+
+            write_event("loop.turn", {"iteration": self.step_count})
 
         self.result = AgentResult(
             text=self.memory.messages[-1].content,
@@ -178,6 +190,7 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             steps=self.step_count,
             tokens=self.memory.token_count(),
         )
+        write_event("loop.terminate", {"reason": "max_steps"})
         return self.result
 
     # ---- narration (front-of-house; memory.py stays pure) ------------------

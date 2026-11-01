@@ -159,6 +159,11 @@ Same stream feeds the narrated CLI and the HTML playground player.
     - stage: M4.7 parser lab + narrated demo
     - stage: M4.8 close-out
 - [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests
+  **Sub-milestones (one concept each):**
+  - [ ] **M5.1** _Final Answer flows_ — when parser sees "Final Answer:", the loop stops immediately; tests verify proper termination.
+  - [ ] **M5.2** _max_steps guard policy_ — step budget becomes the authoritative termination control; tests verify loop stops on budget.
+  - [ ] **M5.3** _golden-trace tests_ — record perfect runs for documentation and M11 docs.
+  - [ ] **M5.4** _Close-out_ — PLAN tick + `stage:` notes, journey picture, full `pytest -q`.
 - [ ] **M6** Trace layer: JSONL event schema (CLI + playground share it)
 - [ ] **M7** OllamaBrain + llama3.2:1b: real local run; bench vs Mock
 - [ ] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; pin limits

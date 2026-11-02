@@ -183,6 +183,99 @@ def test_run_ids_unique_across_runs():
     assert run_id_2 in run_ids
 
 
+def test_brain_network_failure_recorded_not_crashed():
+    """Demonstrates: OllamaUnavailable is recorded as a trace event, not propagated.
+
+    Why it matters: the detective needs network failures in the evidence —
+    an uncaught exception would leave no trace at all.
+    """
+    import urllib.error
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import OllamaBrain, OllamaUnavailable
+
+    def failing_transport(url, payload, timeout):
+        raise urllib.error.URLError("connection refused")
+
+    brain = OllamaBrain(transport=failing_transport, retry_wait=0.0)
+    agent = Agent(brain, narrate=False, max_steps=2)
+
+    # Should NOT raise — the failure is recorded in the trace
+    result = agent.run("compute 2+2")
+    assert result.terminate_reason == "network"
+    assert result.steps == 1  # one attempt before giving up
+
+    events = read_events()
+    responses = [e for e in events if e.kind == "brain.response"]
+    assert len(responses) == 1
+    assert responses[0].payload["failure"] == "network"
+    assert "connection refused" in responses[0].payload["error"]
+
+    terminates = [e for e in events if e.kind == "loop.terminate"]
+    assert len(terminates) == 1
+    assert terminates[0].payload["reason"] == "network"
+    assert terminates[0].payload["failure"] == "network"
+
+
+def test_brain_rate_limit_recorded_not_crashed():
+    """Demonstrates: GeminiUnavailable (429) is recorded as rate_limited, not propagated."""
+    import urllib.error
+    from email.message import Message as EmailMessage
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import GeminiBrain, GeminiUnavailable
+
+    headers = EmailMessage()
+    headers["Retry-After"] = "5"
+    rate_limited = urllib.error.HTTPError(
+        "https://generativelanguage.googleapis.com/x", 429,
+        "Too Many Requests", headers, None)
+
+    def failing_transport(url, payload, timeout):
+        raise rate_limited
+
+    brain = GeminiBrain(transport=failing_transport, retry_wait=0.0, api_key="test-key")
+    agent = Agent(brain, narrate=False, max_steps=2)
+
+    result = agent.run("compute 2+2")
+    assert result.terminate_reason == "rate_limited"
+
+    events = read_events()
+    responses = [e for e in events if e.kind == "brain.response"]
+    assert len(responses) == 1
+    assert responses[0].payload["failure"] == "rate_limited"
+
+    terminates = [e for e in events if e.kind == "loop.terminate"]
+    assert terminates[0].payload["failure"] == "rate_limited"
+
+
+def test_brain_other_http_error_immediate_no_retry():
+    """Demonstrates: non-429 HTTP errors raise immediately, no retry."""
+    import urllib.error
+    from email.message import Message as EmailMessage
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import GeminiBrain
+
+    headers = EmailMessage()
+    forbidden = urllib.error.HTTPError(
+        "https://generativelanguage.googleapis.com/x", 403, "Forbidden",
+        headers, None)
+
+    call_count = 0
+    def counting_transport(url, payload, timeout):
+        nonlocal call_count
+        call_count += 1
+        raise forbidden
+
+    brain = GeminiBrain(transport=counting_transport, retry_wait=0.0, api_key="test-key", retries=3)
+    agent = Agent(brain, narrate=False, max_steps=2)
+
+    result = agent.run("compute 2+2")
+    assert result.terminate_reason == "network"  # 403 is not rate-limited
+    assert call_count == 1  # no retry for 403
+
+
 def test_protocol_error_empty_reply_carries_failure_kind():
     """Demonstrates: empty reply → protocol.error with failure: "empty_reply".
 

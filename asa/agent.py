@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from . import narrate as N
-from .brain import Brain, Completion
+from .brain import Brain, Completion, GeminiUnavailable, OllamaUnavailable
 from .memory import ContextWindow
 from .protocol_react import parse
 from .registry import ToolRegistry
@@ -142,7 +142,23 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             # response -> reply-stored.
             write_event("brain.request", {"prompt": [m.render() for m in self.memory.messages]})
 
-            completion = self.brain.complete(self.memory.messages)
+            try:
+                completion = self.brain.complete(self.memory.messages)
+            except (OllamaUnavailable, GeminiUnavailable) as e:
+                # M8.4.4: brain failures are recorded as trace events, not
+                # propagated as crashes. The detective needs them in evidence.
+                msg = str(e).lower()
+                failure_kind = "rate_limited" if ("429" in msg or "too many requests" in msg) else "network"
+                write_event("brain.response", {"text": "", "error": str(e), "failure": failure_kind})
+                write_event("loop.terminate", {"reason": failure_kind, "failure": failure_kind})
+                self.result = AgentResult(
+                    text="",
+                    terminate_reason=failure_kind,
+                    steps=self.step_count,
+                    tokens=self.memory.token_count(),
+                )
+                return self.result
+
             reply = completion.text
             write_event("brain.response", {"text": reply, "model": completion.model})
             self.memory.add("assistant", reply)

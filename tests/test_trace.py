@@ -23,7 +23,7 @@ def test_event_kind_constants():
 
 
 def test_event_schema():
-    """Demonstrates: each event has ts, iter, kind, payload.
+    """Demonstrates: each event has ts, iter, kind, payload, run_id.
 
     Why it matters: tooling (CLI, playground) depends on this shape.
     """
@@ -33,6 +33,7 @@ def test_event_schema():
     assert d["iter"] == 7
     assert d["kind"] == "brain.request"
     assert d["payload"]["prompt"] == "hi"
+    assert d["run_id"] == ""  # default when not specified
 
 
 def test_event_jsonl_roundtrip():
@@ -43,13 +44,14 @@ def test_event_jsonl_roundtrip():
     """
     from asa.trace import reset_session
     reset_session()
-    ev1 = Event(ts=0.0, iter=1, kind="tool.invoke", payload={"x": 1})
+    ev1 = Event(ts=0.0, iter=1, kind="tool.invoke", payload={"x": 1}, run_id="run-xyz789")
     line = ev1.to_json_line()
     ev2 = Event.from_json_line(line)
     assert ev1.ts == ev2.ts
     assert ev1.iter == ev2.iter
     assert ev1.kind == ev2.kind
     assert ev1.payload == ev2.payload
+    assert ev1.run_id == ev2.run_id == "run-xyz789"
 
 
 def test_write_and_read_events():
@@ -112,3 +114,70 @@ def test_clear_trace():
     assert len(read_events()) == 1
     clear_trace()
     assert len(read_events()) == 0
+
+
+def test_run_id_generated_on_reset():
+    """Demonstrates: reset_session() mints a fresh run_id each time.
+
+    Why it matters: the detective needs every run to have its own identity
+    so it can separate one run's events from another's in the shared file.
+    """
+    from asa.trace import reset_session, get_run_id
+    reset_session()
+    first = get_run_id()
+    assert first is not None
+    assert first.startswith("run-")
+    reset_session()
+    second = get_run_id()
+    assert second is not None
+    assert second != first  # fresh identity every reset
+
+
+def test_agent_run_writes_session_start_with_run_id():
+    """Demonstrates: agent.run() writes session.start carrying run_id.
+
+    Why it matters: this is the detective's anchor — every run begins with
+    a named identity card stamped on its first event.
+    """
+    from asa.trace import read_events, get_run_id
+    from asa.agent import Agent
+    from asa.brain import MockBrain
+
+    agent = Agent(MockBrain(script=["Thought: done\nFinal Answer: hello"]),
+                  narrate=False, max_steps=2)
+    agent.run("test task")
+
+    events = read_events()
+    starts = [e for e in events if e.kind == "session.start"]
+    assert len(starts) == 1
+    assert starts[0].payload["task"] == "test task"
+    run_id = starts[0].payload["run_id"]
+    assert run_id == get_run_id()
+    # Every event in this run carries the same run_id
+    for ev in events:
+        assert ev.run_id == run_id
+
+
+def test_run_ids_unique_across_runs():
+    """Demonstrates: two agent.run() calls get different run_ids.
+
+    Why it matters: the detective must distinguish consecutive runs.
+    """
+    from asa.trace import read_events, get_run_id
+    from asa.agent import Agent
+    from asa.brain import MockBrain
+
+    agent = Agent(MockBrain(script=["Thought: done\nFinal Answer: first"]),
+                  narrate=False, max_steps=2)
+    agent.run("task one")
+    run_id_1 = get_run_id()  # capture before second run overwrites _run_id
+
+    agent.run("task two")  # calls reset_session() internally → new run_id
+    run_id_2 = get_run_id()
+
+    assert run_id_1 != run_id_2
+    # The file now holds events from both runs, each tagged with its own id
+    events = read_events()
+    run_ids = {ev.run_id for ev in events if ev.run_id}
+    assert run_id_1 in run_ids
+    assert run_id_2 in run_ids

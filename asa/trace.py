@@ -4,7 +4,7 @@ The core teaching artifact. Every action the agent does — from the brain
 receiving a task to the final answer — is one JSON line in the trace.
 This makes the agent glass-box; nothing is hidden.
 
-Event kinds (13 total):
+Event kinds (14 total):
   session.start    – agent run begins
   context.add      – a message enters memory
   context.trim     – memory evicts oldest non-system turn
@@ -31,10 +31,10 @@ All events are pure functions; no side effects outside the file.
 
 import json
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-import json
 
 # Timestamp utility
 def _now() -> float:
@@ -65,11 +65,18 @@ _TRACE_FILE = _TRACE_DIR / "trace.jsonl"
 
 # Global counters (simple persistence for the session)
 _session_iter = 0
+_run_id: str | None = None
 
 # Reset function for tests
 def _reset_session():
-    global _session_iter
+    global _session_iter, _run_id
     _session_iter = 0
+    _run_id = f"run-{uuid.uuid4().hex[:8]}"
+
+
+def get_run_id() -> str | None:
+    """Return the current session's run identity (None before first reset)."""
+    return _run_id
 
 @dataclass
 class Event:
@@ -77,9 +84,10 @@ class Event:
     iter: int
     kind: str
     payload: dict[str, Any]
+    run_id: str = ""
 
     def to_dict(self) -> dict:
-        return {"ts": self.ts, "iter": self.iter, "kind": self.kind, "payload": self.payload}
+        return {"ts": self.ts, "iter": self.iter, "kind": self.kind, "payload": self.payload, "run_id": self.run_id}
 
     @classmethod
     def from_dict(cls, d: dict) -> "Event":
@@ -123,7 +131,7 @@ def write_event(kind: str, payload: dict[str, Any]) -> None:
         else:
             return obj
     sanitized_payload = sanitize(payload)
-    event = Event(ts=_now(), iter=_session_iter, kind=kind, payload=sanitized_payload)
+    event = Event(ts=_now(), iter=_session_iter, kind=kind, payload=sanitized_payload, run_id=_run_id or "")
     # Ensure the file exists and append atomically (write to temp then rename)
     tmp = _TRACE_FILE.with_suffix(".tmp")
     # Read existing lines to preserve order (small files only)

@@ -22,7 +22,7 @@ from .protocol_react import parse
 from .registry import ToolRegistry
 from .tool import ToolCall
 from .tools import default_tools
-from .trace import write_event
+from .trace import get_run_id, reset_session, write_event
 
 
 @dataclass
@@ -106,6 +106,12 @@ If you see a gentle note about fixing your letter, correct the format and try ag
         Memory persists on the agent: call run() again and the transcript keeps
         growing — a single Agent instance is a single session.
         """
+        # M8.4.1: every run gets its own identity (run_id) so the detective can
+        # separate one run's events from another's in the shared trace file.
+        reset_session()
+        run_id = get_run_id()
+        write_event("session.start", {"task": task, "run_id": run_id})
+
         self.memory.add("user", task)
         if self.narrate:
             N.info(

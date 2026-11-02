@@ -329,7 +329,27 @@ Same stream feeds the narrated CLI and the HTML playground player.
         offline tests + live smoke.)*
   - [ ] **M8.5** _Close-out_ — PLAN tick + stage notes; journey picture (no debt this time);
         full pytest; AGENTS count refresh.
+  - [x] **M8.5** _Close-out_ — PLAN tick + stage notes; journey picture (no debt this time);
+        full pytest; AGENTS count refresh. *(Done 2026-11-02: covered by M8.4.5 close-out —
+        170 tests green, all ticked.)*
 - [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct
+  *(The "two protocols" lesson made measurable: same agent core, same ToolCall box,
+  two protocol adapters underneath. Textual ReAct (M4) vs native function calling (M9).)*
+  **Sub-milestones (one concept each):**
+  - [ ] **M9.0** _Map + decisions_ (no code): Gemini function calling API shape
+        (functionDeclarations + parameters schema in generateContent), ToolCall↔functionCall
+        conversion contract, agent core stays protocol-agnostic (same complete() seam),
+        offline fake-transport tests + live smoke skipping without key.
+  - [ ] **M9.1** _protocol_native skeleton_ — native adapter: build_tools_payload()
+        (functionDeclarations from registry schemas), parse_function_call()
+        (Gemini functionCall → ToolCall), offline unit tests, no network.
+  - [ ] **M9.2** _GeminiBrain native mode_ — accepts optional tool schemas, sends
+        functionDeclarations + function calling config, falls back to plain text
+        when no tools offered; thinking stays filtered (M8.1 lesson).
+  - [ ] **M9.3** _Side-by-side benchmark_ — same task through ReAct (protocol_react)
+        vs native (protocol_native): compare letter-drift rate, repair count, steps,
+        tokens, wall time; lab-style narrated comparison.
+  - [ ] **M9.4** _Close-out_ — PLAN tick + stage notes; full pytest; AGENTS count refresh.
 - [ ] **M10** GPT2Brain failure demo
 - [ ] **M11** Docs: 7 illustrated topics
 - [ ] **M12** HTML playground (offline via pre-recorded traces)

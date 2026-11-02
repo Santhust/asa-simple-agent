@@ -127,14 +127,21 @@ If you see a gentle note about fixing your letter, correct the format and try ag
                 self._narrate_context()
 
             # ---- THE SEAM (M4.6) ----------------------------------------
+            # ---- THE SEAM (M4.6) ----------------------------------------
+            # M6.3b ordering (fixed 2026-11-02 during M8.2's archaeology): the
+            # brain.request event MUST emit BEFORE the call — it used to fire
+            # after memory.add, so every recorded snapshot contained the reply
+            # it claimed to have prompted (evidence corrupted, detective
+            # misled, probe replays poisoned). Now: request -> call ->
+            # response -> reply-stored.
+            write_event("brain.request", {"prompt": [m.render() for m in self.memory.messages]})
+
             completion = self.brain.complete(self.memory.messages)
             reply = completion.text
+            write_event("brain.response", {"text": reply, "model": completion.model})
             self.memory.add("assistant", reply)
             if self.narrate:
                 self._narrate_completion(completion)
-
-            write_event("brain.request", {"prompt": [m.render() for m in self.memory.messages]})
-            write_event("brain.response", {"text": reply, "model": completion.model})
 
             verdict = parse(reply)
             write_event("protocol.raw", {"raw": reply})

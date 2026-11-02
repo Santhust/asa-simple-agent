@@ -16,14 +16,14 @@ import argparse
 
 import asa.narrate as N
 from asa.agent import Agent
-from asa.brain import Brain, MockBrain, OllamaBrain
+from asa.brain import Brain, GeminiBrain, MockBrain, OllamaBrain
 from asa.memory import ContextWindow
 from asa.registry import ToolRegistry
 
 # The brain zoo, wired one member at a time per milestone:
 #   mock   = deterministic (M2)   |   ollama = first REAL local brain (M7)
-# coming: gemini -> M8, gpt2 -> M10
-BRAINS = {"mock": MockBrain, "ollama": OllamaBrain}
+#   gemini = first CLOUD brain (M8)   |   coming: gpt2 -> M10
+BRAINS = {"mock": MockBrain, "ollama": OllamaBrain, "gemini": GeminiBrain}
 
 
 def parse_args(argv=None) -> argparse.Namespace:
@@ -57,7 +57,7 @@ def main(argv=None) -> int:
     if args.script:
         brain = MockBrain(script=args.script, model=brain.model)
 
-    N.h1("asa — a simple agent · narrated run (real brains inside: mock + ollama)")
+    N.h1("asa — a simple agent · narrated run (real brains: mock · ollama · gemini)")
     N.kv("brain", brain.describe())
     N.kv("task", repr(args.task))
     N.kv("max_steps", args.max_steps)

@@ -274,14 +274,28 @@ Same stream feeds the narrated CLI and the HTML playground player.
         429 policy gets its own sub-milestone (M8.3)
   - stage: M8.0 decisions pinned (generateContent endpoint, systemInstruction split, GEMINI_API_KEY env, flash-lite, thinking off, transport seam)
   - stage: M8.1 GeminiBrain skeleton (3rd dialect, header-only key, redaction, thought-part filter; live smoke RAN; budget=0 rejected → pin amended)
+  - stage: M8.2 --brain gemini wired; first cloud run (correct letter, empty→note→heal); silence named: MALFORMED_RESPONSE; M6 request-order debt fixed (M6.3b)
   - [x] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
         tests with fake transport; live smoke skips when no key/network. *(Built + live-probed
         2026-11-02: 9 offline tests + live smoke RAN (key present — first real Gemini words);
         the live probe falsified the think-off pin at the API level (budget=0 → 400) and forced
         the mapping-time thought-filter amendment; credential rules enforced in code
         (header-not-URL, redaction, missing-key guidance); M7.1 suite untouched.)*
-  - [ ] **M8.2** _First real words_ — narrated live run; rate-limit headers OBSERVED and recorded
-        into the trace (evidence, not vibes).
+  - [x] **M8.2** _First real words_ — narrated live run `--brain gemini`; rate-limit headers OBSERVED
+        and recorded into the trace. *(Done 2026-11-02 — with findings: (1) narrated run SUCCEEDED,
+        3 steps, final_answer: cloud wrote a CORRECT ReAct letter on the FIRST try (expression=7*6,
+        no repair needed — local lfm3 needed one), then an EMPTY turn-2 met the gentle note and turn
+        3 answered after it; (2) probe with corrected pre-call context exposed the silence's cause —
+        Google reports `finishReason: MALFORMED_RESPONSE` with ZERO output tokens: cloud silence has
+        a surfaceable name → feeds the M8.4 failure taxonomy; (3) 200-responses carry NO quota
+        headers — the exact free-tier numbers must be pinned from the user's AI Studio
+        rate-limit page (docs page no longer publishes them); (4) planning-era per-project
+        mechanics CONFIRMED by docs: RPM/TPM/RPD per model, 429 RESOURCE_EXHAUSTED, midnight-Pacific
+        RPD reset, no spend limits on Free; (5) two rows added to the run.py BRAINS (3rd seat) + cli
+        wiring test; (6) **M6 DEBT PAID**: archaeology exposed the brain.request event fired AFTER
+        reply-storing — snapshots contained the reply they prompted (probe replays poisoned → one
+        false "Google rejects our shape" hypothesis). Fixed + temporally-truth tests (M6.3b): the
+        trace now never previews a reply that did not exist at request time.)*
   - [ ] **M8.3** _Rate-limit fail-soft_ — 429 + Retry-After handled inside the existing gentle
         philosophy: retry with backoff → guidance-laden GeminiUnavailable; tests with fake 429s.
   - [ ] **M8.4** _The Detective Kit_ — (1) failure taxonomy: named failure kinds in trace payloads

@@ -114,3 +114,18 @@ def test_ollama_flag_wired_to_the_first_real_brain():
     assert args.brain == "ollama"
     brain = run.BRAINS["ollama"]()  # the exact construction path main() uses
     assert brain.model == "lfm3:latest"  # M7.0 decision: tag is a config string
+
+
+def test_gemini_flag_wired_to_the_first_cloud_brain():
+    """Demonstrates: --brain gemini selects the cloud brain (M8.2).
+
+    Construction path only — no network, no key usage. M8.1's suite (with the
+    fake transport and the live smoke) is where GeminiBrain's behavior lives.
+    """
+    from asa.brain import GeminiBrain
+    assert run.BRAINS["gemini"] is GeminiBrain
+    args = run.parse_args(["--brain", "gemini"])
+    assert args.brain == "gemini"
+    brain = run.BRAINS["gemini"]()
+    assert brain.model == "gemini-3.5-flash-lite"   # M8.0 decision: a config string
+    assert brain.thinking is False                  # M8.0 pin (amended note: no thinkingConfig sent)

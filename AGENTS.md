@@ -20,8 +20,13 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
                   Pi5 8GB; stdlib HTTP, no pip dep). *(Change of plan 2026-11-02: lfm3 replaces
                   llama3.2:1b — user installed + tested it under Ollama, same localhost:11434.
                   Bench pin 2026-11-02 on this Pi5: ~7.2 tok/s generation, thinking on.)*
-- `GeminiBrain` : Google free tier, Gemini 3.1 / 3.5 Flash Lite
-                  (15 RPM / 250K TPM / 500 RPD) + Gemma 4 26B / 31B by name; key available
+- `GeminiBrain` : first CLOUD member — built M8.1/M8.2 (text protocol over generateContent);
+                  default gemini-3.5-flash-lite · key from **GEMINI_API_KEY** env only, sent in
+                  the x-goog-api-key header (never URLs/logs/traces) · thinking = model default,
+                  thought parts filtered (budget=0 rejected with 400 — M8.1 amendment) ·
+                  planning-era limits 15 RPM / 250K TPM / 500 RPD; no quota headers on responses,
+                  exact numbers to be pinned from user's AI Studio page (M8.2) · Gemma 4 26B/31B
+                  selectable by name.
 - `GPT2Brain`   : INTENTIONAL FAILURE demo (base LM, not instruction-tuned)
 - swapping brains IS the lesson: a model is a text-in/text-out box to the agent.
 
@@ -78,7 +83,7 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
 
 ## Commands
 (CANONICAL — kept true at every close-out)
-- `python run.py --task "..." [--brain mock|ollama] [--model TAG] [--max-steps N]
+- `python run.py --task "..." [--brain mock|ollama|gemini] [--model TAG] [--max-steps N]
   [--script "…" …] [--no-tools] [--explain] [--no-color]`   (today's real flags;
   M6 trace always writes `asa/traces/trace.jsonl` — no `--trace` flag needed)
 - `python bench.py --task "..." [--brains mock,ollama] [--max-steps N] [--json]`

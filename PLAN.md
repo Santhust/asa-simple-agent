@@ -243,6 +243,32 @@ Same stream feeds the narrated CLI and the HTML playground player.
         inventory panels updated; 1 new frame m7-stage-00.png → 12 slides in timeline.html (5KB)
         → journey.gif 12 frames. Truth-sweep side quest: m4 close's skipped pass acknowledged.)*
 - [ ] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; pin limits
+  *(Scope refined 2026-11-02: M8 also carries the **Detective Kit** — cloud brains bring the
+  failure modes (rate limits, remote silence, hallucinated tool names) that give forensics
+  real exercise. Story: the M6 recorder proved itself as a debugging tool during M7's think-pin
+  falsification; M8 makes evidence structured + replayable, and ships the replay probe as a lab.
+  The detective is a TOOL we run (forensic evidence + replay), NOT the agent introspecting —
+  that ceiling is a later conversation.)*
+  **Sub-milestones (one concept each):**
+  - [ ] **M8.0** _Map + decisions_ (no code): API endpoint + payload shape (system→systemInstruction,
+        Message list→contents[]) · key from env (user has a key) · stdlib urllib only · transport
+        seam (fake-HTTP offline tests, M7.1 pattern) · thinking policy for ReAct (default off,
+        amended by reality if needed — M7.0's lesson) · pin CURRENT rate limits from the AI Studio
+        rate-limits page (PLAN's planning-era numbers: 15 RPM / 250K TPM / 500 RPD Flash Lite).
+  - [ ] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
+        tests with fake transport; live smoke skips when no key/network.
+  - [ ] **M8.2** _First real words_ — narrated live run; rate-limit headers OBSERVED and recorded
+        into the trace (evidence, not vibes).
+  - [ ] **M8.3** _Rate-limit fail-soft_ — 429 + Retry-After handled inside the existing gentle
+        philosophy: retry with backoff → guidance-laden GeminiUnavailable; tests with fake 429s.
+  - [ ] **M8.4** _The Detective Kit_ — (1) failure taxonomy: named failure kinds in trace payloads
+        (empty_reply · protocol_drift · tool_error · network · budget_exhausted · rate_limited);
+        (2) run_id on session.start so runs are separable; (3) `lab/detective_lab.py` — reads a
+        trace, extracts failing brain.request contexts, converts render()→native, replays against
+        the brain (one-variable bisect), offline-first. Exercised on frozen real failure shapes
+        (the M7 letters + scripted 429s), MockBrain style.
+  - [ ] **M8.5** _Close-out_ — PLAN tick + stage notes; journey picture (no debt this time);
+        full pytest; AGENTS count refresh.
 - [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct
 - [ ] **M10** GPT2Brain failure demo
 - [ ] **M11** Docs: 7 illustrated topics

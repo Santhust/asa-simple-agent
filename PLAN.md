@@ -275,6 +275,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M8.0 decisions pinned (generateContent endpoint, systemInstruction split, GEMINI_API_KEY env, flash-lite, thinking off, transport seam)
   - stage: M8.1 GeminiBrain skeleton (3rd dialect, header-only key, redaction, thought-part filter; live smoke RAN; budget=0 rejected → pin amended)
   - stage: M8.2 --brain gemini wired; first cloud run (correct letter, empty→note→heal); silence named: MALFORMED_RESPONSE; M6 request-order debt fixed (M6.3b)
+  - stage: M8.3 rate-limit fail-soft: 429 retries once (Retry-After honored), then guidance; 403 immediate; fake-transport tests green
   - [x] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
         tests with fake transport; live smoke skips when no key/network. *(Built + live-probed
         2026-11-02: 9 offline tests + live smoke RAN (key present — first real Gemini words);
@@ -296,8 +297,12 @@ Same stream feeds the narrated CLI and the HTML playground player.
         reply-storing — snapshots contained the reply they prompted (probe replays poisoned → one
         false "Google rejects our shape" hypothesis). Fixed + temporally-truth tests (M6.3b): the
         trace now never previews a reply that did not exist at request time.)*
-  - [ ] **M8.3** _Rate-limit fail-soft_ — 429 + Retry-After handled inside the existing gentle
+  - [x] **M8.3** _Rate-limit fail-soft_ — 429 + Retry-After handled inside the existing gentle
         philosophy: retry with backoff → guidance-laden GeminiUnavailable; tests with fake 429s.
+        *(Built 2026-11-02: 429 retries once with Retry-After backoff (falls back to gentle
+        default), other HTTP errors raise immediately; guidance names the rate limit without
+        the key; 3 offline tests prove retry-once, Retry-After honored, 403-immediate. Exact
+        free-tier RPM/TPM/RPD pending the user's glance at the AI Studio rate-limit page.)*
   - [ ] **M8.4** _The Detective Kit_ — (1) failure taxonomy: named failure kinds in trace payloads
         (empty_reply · protocol_drift · tool_error · network · budget_exhausted · rate_limited);
         (2) run_id on session.start so runs are separable; (3) `lab/detective_lab.py` — reads a

@@ -117,8 +117,8 @@ If you see a gentle note about fixing your letter, correct the format and try ag
                 f"{', '.join(self.registry.names())}"
             )
             N.info(
-                "the loop still cannot act on them — the protocol that turns model "
-                "text into ToolCall is M4's; today every reply is just memorized"
+                "the M4 reader turns each reply into action / observation / answer "
+                "— this run's every internal step lands in asa/traces/trace.jsonl (M6)"
             )
 
         for step in range(self.max_steps):

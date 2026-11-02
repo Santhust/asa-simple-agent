@@ -16,11 +16,14 @@ import argparse
 
 import asa.narrate as N
 from asa.agent import Agent
-from asa.brain import Brain, MockBrain
+from asa.brain import Brain, MockBrain, OllamaBrain
 from asa.memory import ContextWindow
 from asa.registry import ToolRegistry
 
-BRAINS = {"mock": MockBrain}  # ollama -> M7, gemini -> M8, gpt2 -> M10
+# The brain zoo, wired one member at a time per milestone:
+#   mock   = deterministic (M2)   |   ollama = first REAL local brain (M7)
+# coming: gemini -> M8, gpt2 -> M10
+BRAINS = {"mock": MockBrain, "ollama": OllamaBrain}
 
 
 def parse_args(argv=None) -> argparse.Namespace:
@@ -54,7 +57,7 @@ def main(argv=None) -> int:
     if args.script:
         brain = MockBrain(script=args.script, model=brain.model)
 
-    N.h1("asa — a simple agent · narrated run (Milestone 3.6: M3 complete — hands wired)")
+    N.h1("asa — a simple agent · narrated run (real brains inside: mock + ollama)")
     N.kv("brain", brain.describe())
     N.kv("task", repr(args.task))
     N.kv("max_steps", args.max_steps)
@@ -111,12 +114,11 @@ def main(argv=None) -> int:
         N.why("Forgetting is explicit and visible, never silent — that is how real "
               "platforms run 'context on a budget'.")
 
-    N.h2("What just happened — and what comes next")
-    N.info("The Agent is a text-in/text-out machine with memory. It SEES its hands")
-    N.info("(M3: the catalogue lives in the system prompt) but the loop cannot yet")
-    N.info("act on them — parsing model text into ToolCall is next:")
-    N.info("  M4 ReAct parser · M5 full loop with Final Answer")
-    N.ok("tools wired, loop honest: the agent sees its hands, touches nothing yet.")
+    N.h2("What just happened — and what the run left behind")
+    N.info("Full loop, live: Task -> memory -> brain -> the M4 ReAct reader turns the")
+    N.info("model text into ToolCall / gentle-repair / Final Answer (M5). Every internal")
+    N.info("step was written to the M6 flight recorder: asa/traces/trace.jsonl.")
+    N.ok("the loop ran end to end — scripted or real, the seam is identical.")
 
     return 0
 

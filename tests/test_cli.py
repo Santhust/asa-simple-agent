@@ -99,3 +99,18 @@ def test_no_color_strips_ansi(monkeypatch, capsys):
     monkeypatch.setattr(narrate, "_NO_COLOR", False)
     run.main(["--task", "hi", "--script", "hello"])
     assert "\x1b[" in capsys.readouterr().out
+
+
+def test_ollama_flag_wired_to_the_first_real_brain():
+    """Demonstrates: --brain ollama selects the real local brain (M7).
+
+    The test stays OFFLINE: it checks the registry mapping and that argparse
+    accepts the choice — a *construction* test, not a live call (network gets
+    its own smoke test in test_m7_1_ollama_brain.py).
+    """
+    from asa.brain import OllamaBrain
+    assert run.BRAINS["ollama"] is OllamaBrain
+    args = run.parse_args(["--brain", "ollama"])
+    assert args.brain == "ollama"
+    brain = run.BRAINS["ollama"]()  # the exact construction path main() uses
+    assert brain.model == "lfm3:latest"  # M7.0 decision: tag is a config string

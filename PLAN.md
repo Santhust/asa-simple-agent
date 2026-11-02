@@ -207,12 +207,15 @@ Same stream feeds the narrated CLI and the HTML playground player.
         - `num_predict` output cap ~512 default, overridable (bounds runaway on slow hardware)
   - stage: M7.0 decisions pinned (chat API, think:false, urllib, retry, num_predict)
   - stage: M7.1 OllamaBrain skeleton (chat payload, think:false, transport seam, fail-soft; live smoke ran)
+  - stage: M7.2 --brain ollama wired; first narrated real run (proper ReAct letter, final_answer)
   - [x] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
         with a fake transport + live smoke test that SKIPS when Ollama isn't running.
         *(Built 2026-11-02: transport injectable, 8 offline tests + live smoke (RAN — Ollama
         was up); 122 tests green.)*
-  - [ ] **M7.2** _First real words_ — narrated live run `--brain ollama`; observe thinking behavior
-        in practice, decide where it goes (trace? memory? nowhere?).
+  - [x] **M7.2** _First real words_ — narrated live run `--brain ollama`; observe thinking behavior
+        in practice, decide where it goes (trace? memory? nowhere?). *(Built 2026-11-02: flag wired
+        to OllamaBrain; narrated demo on real lfm3 produced a proper ReAct letter — parsed to Final
+        Answer at step 1; think:false worked silently as decided at M7.0; 5 trace events record it.)*
   - [ ] **M7.3** _Does the real model write a parseable letter?_ — one-step calculator task;
         watch M4.3's gentle repair catch real-world format drift.
   - [ ] **M7.4** _bench.py_ — same task through MockBrain vs OllamaBrain side-by-side; timing,

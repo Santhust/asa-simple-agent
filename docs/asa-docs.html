@@ -66,13 +66,13 @@
   <nav class="toc">
     <h2>Topics</h2>
     <ol>
-      <li><a href="#topic-1" class="current">1 · What is an agent?</a></li>
-      <li><a href="#topic-2">2 · The loop</a></li>
-      <li><a href="#topic-3">3 · Context / memory</a></li>
-      <li><a href="#topic-4">4 · Tools, registry &amp; prompt-craft</a></li>
-      <li><a href="#topic-5">5 · Parsing / two protocols</a></li>
-      <li><a href="#topic-6">6 · The brain zoo</a></li>
-      <li><a href="#topic-7">7 · Observability &amp; failure modes</a></li>
+      <li><a href="#topic-1" onclick="show(0)" class="current">1 · What is an agent?</a></li>
+      <li><a href="#topic-2" onclick="show(1)">2 · The loop</a></li>
+      <li><a href="#topic-3" onclick="show(2)">3 · Context / memory</a></li>
+      <li><a href="#topic-4" onclick="show(3)">4 · Tools, registry &amp; prompt-craft</a></li>
+      <li><a href="#topic-5" onclick="show(4)">5 · Parsing / two protocols</a></li>
+      <li><a href="#topic-6" onclick="show(5)">6 · The brain zoo</a></li>
+      <li><a href="#topic-7" onclick="show(6)">7 · Observability &amp; failure modes</a></li>
     </ol>
   </nav>
 
@@ -542,7 +542,7 @@
   /* ---- prev/next topic nav ---- */
   const topics = ["topic-1","topic-2","topic-3","topic-4","topic-5","topic-6","topic-7"];
   let idx = 0;
-  function show(i){ topics.forEach((t,k)=>{document.getElementById(t).style.display = (k===i)?"block":"none";}); document.getElementById("prev").disabled = i===0; document.getElementById("next").disabled = i===topics.length-1; document.querySelector(".cur").textContent = "topic "+(i+1)+" / "+topics.length; }
+  function show(i){ topics.forEach((t,k)=>{document.getElementById(t).style.display = (k===i)?"block":"none";}); document.getElementById("prev").disabled = i===0; document.getElementById("next").disabled = i===topics.length-1; document.querySelector(".cur").textContent = "topic "+(i+1)+" / "+topics.length; document.querySelectorAll("nav.toc a").forEach((a,k)=>{a.className = (k===i)?"current":"";}); }
   document.getElementById("prev").onclick = ()=>{ idx = Math.max(0, idx-1); show(idx); };
   document.getElementById("next").onclick = ()=>{ idx = Math.min(topics.length-1, idx+1); show(idx); };
   show(0);

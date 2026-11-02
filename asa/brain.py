@@ -8,6 +8,10 @@ function that turns a list of messages into a string of text.
 So swapping the brain never changes agent code. That swapability is a lesson in itself.
 """
 
+import json
+import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 
 from .tokens import estimate_tokens
@@ -89,3 +93,145 @@ class MockBrain(Brain):
 
     def describe(self) -> str:
         return f"MockBrain(model={self.model!r}, script_steps_left={len(self._script)})"
+
+
+DEFAULT_OLLAMA_HOST = "http://localhost:11434"
+
+
+class OllamaUnavailable(RuntimeError):
+    """Ollama could not be reached or answered with an HTTP error.
+
+    The name keeps the cause honest: the SERVER (or the hop to it) failed —
+    the model itself never got to speak. Carrying guidance in the message
+    turns a raw exception into a note a beginner can act on.
+    """
+
+
+class OllamaBrain(Brain):
+    """The brain zoo's first REAL member (M7): a local model via Ollama.
+
+    Text-in / text-out exactly like MockBrain — same seam (complete()),
+    same agent, zero agent-code changes. Swapping them IS the lesson.
+
+    Talks to `/api/chat` with stdlib urllib only (ZERO pip deps). Decisions
+    pinned at M7.0 (PLAN.md):
+      * `/api/chat` — message-list in, text out (matches Message -> Completion)
+      * `think: False` — lfm3 reasons out loud by default; OFF so the reply
+        text is exactly the ReAct letter we parse (one-flag toggle later)
+      * long timeout + 1 gentle retry: local inference is slow and a blip
+        should not kill a run; `num_predict` caps runaway generations
+
+    The network call sits behind an injectable `transport` function, so all
+    conversation-shaping and failure policy can be tested OFFLINE with a fake
+    transport — instant, deterministic, no Ollama required. Only one small
+    live smoke test touches the real server, and it skips when Ollama is down.
+    """
+
+    name = "ollama"
+
+    def __init__(self, model: str = "lfm3:latest", host: str = DEFAULT_OLLAMA_HOST, *,
+                 think: bool = False, num_predict: int = 512,
+                 temperature: float | None = None,
+                 timeout: float = 120.0, retries: int = 1, retry_wait: float = 1.0,
+                 transport=None):
+        self.model = model
+        self.host = host.rstrip("/")
+        self.think = think
+        self.num_predict = num_predict
+        self.temperature = temperature
+        self.timeout = timeout
+        self.retries = retries
+        self.retry_wait = retry_wait
+        self._transport = transport or self._default_transport
+        self.call_count = 0  # mirrors MockBrain: same knobs for bench parity (M7.4)
+        self.last_payload: dict | None = None  # last request body, for inspection
+
+    # -- the seam the tests swap ---------------------------------------------
+    @staticmethod
+    def _default_transport(url: str, payload: dict, timeout: float) -> tuple:
+        """The ONLY network code in the whole brain: one urllib POST."""
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url, data=body, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+
+    # -- request shaping: our Message -> Ollama /api/chat --------------------
+    def _build_payload(self, messages: list[Message], model: str, think: bool,
+                       num_predict: int, temperature: float | None) -> dict:
+        options = {"num_predict": num_predict}
+        if temperature is not None:
+            options["temperature"] = temperature
+        return {
+            "model": model,
+            "messages": [
+                # Ollama's chat roles are exactly ours: system / user / assistant.
+                # NOTE: we send m.content, NOT m.render() — the "<role>" prefix is
+                # OUR textual narration format; a native chat API carries the
+                # role in its own JSON field instead.
+                {"role": m.role, "content": m.content} for m in messages
+            ],
+            "stream": False,  # one complete letter, not a token faucet
+            "think": think,   # M7.0 decision: thinking OFF for ReAct runs
+            "options": options,
+        }
+
+    def complete(self, messages: list[Message], **params) -> Completion:
+        """Ask Ollama /api/chat and map the reply into a Completion."""
+        allowed = ("model", "think", "num_predict", "temperature")
+        unknown = set(params) - set(allowed)
+        if unknown:
+            raise ValueError(
+                f"unknown param(s) {sorted(unknown)} — allowed: {list(allowed)}")
+        payload = self._build_payload(
+            messages,
+            model=params.get("model", self.model),
+            think=params.get("think", self.think),
+            num_predict=params.get("num_predict", self.num_predict),
+            temperature=params.get("temperature", self.temperature),
+        )
+        url = f"{self.host}/api/chat"
+        attempts = self.retries + 1
+        last_err: Exception | None = None
+        for attempt in range(1, attempts + 1):
+            self.call_count += 1  # counts transport attempts: bench needs honesty too
+            self.last_payload = payload
+            try:
+                _, body = self._transport(url, payload, self.timeout)
+            # The server SPOKE an error (bad request, model missing...): retrying
+            # cannot heal a 4xx — surface it immediately, guidance attached.
+            except urllib.error.HTTPError as e:
+                raise OllamaUnavailable(
+                    f"Ollama answered HTTP {e.code} ({e.reason}) for {self.model!r} "
+                    f"— is the model pulled and Ollama >= the required version?") from e
+            # No answer at all (refused connection, timeout, malformed body):
+            # fail-soft — this MIGHT be a blip, so retry once if allowed.
+            except (urllib.error.URLError, OSError, json.JSONDecodeError) as e:
+                last_err = e
+                if attempt < attempts and self.retry_wait > 0:
+                    time.sleep(self.retry_wait)
+                continue
+            return self._to_completion(body, messages)
+        raise OllamaUnavailable(
+            f"could not reach Ollama at {self.host} after {attempts} attempt(s) "
+            f"({last_err!r}) — is `ollama serve` running, and is the model in "
+            f"`ollama list`?") from last_err
+
+    # -- response mapping: Ollama JSON -> Completion --------------------------
+    @staticmethod
+    def _to_completion(body: dict, messages: list[Message]) -> Completion:
+        text = (body.get("message") or {}).get("content", "")
+        return Completion(
+            text=text,
+            model=body.get("model", "ollama"),
+            # Ollama reports REAL token counts when it can; when a server omits
+            # them we fall back to OUR estimator (MockBrain does the same), so
+            # bench numbers never silently sit at zero.
+            prompt_tokens=body.get("prompt_eval_count")
+            or sum(estimate_tokens(m.content) for m in messages),
+            completion_tokens=body.get("eval_count") or estimate_tokens(text),
+        )
+
+    def describe(self) -> str:
+        return (f"OllamaBrain(model={self.model!r}, host={self.host!r}, "
+                f"think={self.think}, num_predict={self.num_predict})")

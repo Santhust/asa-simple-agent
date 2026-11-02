@@ -408,7 +408,16 @@ Same stream feeds the narrated CLI and the HTML playground player.
       - stage: M11.7 Topic 7 observability/failure modes
       - stage: M11.8 close-out — docs/asa-docs.html complete, 7 topics, inline SVG + quizzes, 17 code pointers
 
-- [ ] **M12** HTML playground (offline via pre-recorded traces)
+- [~] **M12** HTML playground (offline via pre-recorded traces)
+  **Sub-milestones (one concept each):**
+  - [ ] **M12.1** _Playground shell_ — index.html structure + nav + CSS matching docs/timeline.html
+  - [ ] **M12.2** _Trace player core_ — load trace.jsonl, play/scrub events, context gutter + token gauge
+  - [ ] **M12.3** _Pre-recorded traces_ — ship happy-path + broken traces (run agent to generate trace.jsonl)
+  - [ ] **M12.4** _Animated architecture diagram_ — from docs/m1-diagram.svg, animated build
+  - [ ] **M12.5** _Breakage lab_ — broken trace demo + how to read failure taxonomy
+  - [ ] **M12.6** _Two-protocol comparison + model zoo + glossary + quiz_ — embed compare_protocols, brain zoo, self-check
+  - [ ] **M12.7** _Close-out_ — PLAN tick + stage notes; full pytest green (197); AGENTS count unchanged
+
 - [ ] **M13** Live mode (serve.py SSE) + README quickstart + final walkthrough
 
 ## Publishing to GitHub (decision: option 1 — defer the scrub)

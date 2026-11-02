@@ -203,11 +203,16 @@ Same stream feeds the narrated CLI and the HTML playground player.
         - API: `/api/chat` (message-list in → text out; matches `Message.render()` → `Completion` shape)
         - **thinking policy: OFF for ReAct** (`think: false`) — user chose predictability + speed;
           thinking capture stays a one-flag later toggle, no re-architecture.
+          *(AMENDED 2026-11-02 at M7.3, reality check: the live exam falsified this pin —
+          lfm3 is thinking-native and produced EMPTY content under think=false in real agent
+          contexts. Default is now think=True; Ollama answers thinking in a separate
+          `message.thinking` field, so `content` stays a clean ReAct letter regardless.)*
         - stdlib `urllib.request` only (zero pip deps); long timeout + 1 gentle retry (local inference is slow)
         - `num_predict` output cap ~512 default, overridable (bounds runaway on slow hardware)
   - stage: M7.0 decisions pinned (chat API, think:false, urllib, retry, num_predict)
   - stage: M7.1 OllamaBrain skeleton (chat payload, think:false, transport seam, fail-soft; live smoke ran)
   - stage: M7.2 --brain ollama wired; first narrated real run (proper ReAct letter, final_answer)
+  - stage: M7.3 reality check: think=false falsified (empty content) -> amended to True; drift self-repaired on real run; trace-isolation bug fixed
   - [x] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
         with a fake transport + live smoke test that SKIPS when Ollama isn't running.
         *(Built 2026-11-02: transport injectable, 8 offline tests + live smoke (RAN — Ollama
@@ -216,8 +221,13 @@ Same stream feeds the narrated CLI and the HTML playground player.
         in practice, decide where it goes (trace? memory? nowhere?). *(Built 2026-11-02: flag wired
         to OllamaBrain; narrated demo on real lfm3 produced a proper ReAct letter — parsed to Final
         Answer at step 1; think:false worked silently as decided at M7.0; 5 trace events record it.)*
-  - [ ] **M7.3** _Does the real model write a parseable letter?_ — one-step calculator task;
-        watch M4.3's gentle repair catch real-world format drift.
+  - [x] **M7.3** _Does the real model write a parseable letter?_ — one-step calculator task;
+        watch M4.3's gentle repair catch real-world format drift. *(Built 2026-11-02: YES — but
+        only on retake. Run 1 (think=false): empty letters x3, honest max_steps stop, then the
+        contained-context replay pointed at thinking-nativeness. Retake (think=True): drift
+        `Action Input: "7*6"` → gentle note → SELF-REPAIR to `{"expression": "7*6"}` → tool →
+        Final Answer: 42. Real letters frozen as offline regressions. Also exposed + fixed a
+        latent conftest isolation bug (reset_session never cleared the trace FILE).)*
   - [ ] **M7.4** _bench.py_ — same task through MockBrain vs OllamaBrain side-by-side; timing,
         tokens, success; pin lfm3 throughput on this Pi5 (stage note).
   - [ ] **M7.5** _Close-out_ — PLAN tick + stage notes; journey-picture pass (also covers M6.5 debt);

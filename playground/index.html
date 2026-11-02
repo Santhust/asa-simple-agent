@@ -163,7 +163,7 @@
   </section>
 
   <!-- ============ Play 2: Trace player ============ -->
-  <section class="play" id="play-2">
+  <section class="play" id="play-2" style="display:none">
     <h2><span class="num">2</span><span class="title">Trace player</span></h2>
     <p class="story">Every internal step is one JSONL trace event <code>{ts, iter, kind, payload}</code>. Pick a trace, step through it event by event, or auto-play. The context gutter shows how memory grows each turn.</p>
     <div class="controls">
@@ -200,7 +200,7 @@
   </section>
 
   <!-- ============ Play 3: Breakage lab ============ -->
-  <section class="play" id="play-3">
+  <section class="play" id="play-3" style="display:none">
     <h2><span class="num">3</span><span class="title">Breakage lab</span></h2>
     <p class="story">Failures are data, not crashes. When the model writes a broken letter (no <code>Action:</code>, no <code>Action Input:</code>), the parser returns a gentle note instead of an exception. The model reads the note, corrects its format, and retries — drift → observation → repair.</p>
     <div class="panel">
@@ -236,7 +236,7 @@ Model (next turn): writes a correct Action: calculator / Action Input: ...</pre>
   </section>
 
   <!-- ============ Play 4: Two-protocol comparison ============ -->
-  <section class="play" id="play-4">
+  <section class="play" id="play-4" style="display:none">
     <h2><span class="num">4</span><span class="title">Two-protocol comparison</span></h2>
     <p class="story">Same agent core, same <code>ToolCall(name, args)</code> box, two protocol adapters underneath. ReAct (textual letters) vs native (API function calling). Measured side-by-side on the same task: drift, repair, steps, tokens, wall time.</p>
     <div class="two-col">
@@ -280,7 +280,7 @@ Model (next turn): writes a correct Action: calculator / Action Input: ...</pre>
   </section>
 
   <!-- ============ Play 5: Model zoo + glossary ============ -->
-  <section class="play" id="play-5">
+  <section class="play" id="play-5" style="display:none">
     <h2><span class="num">5</span><span class="title">Model zoo &amp; glossary</span></h2>
     <p class="story">To the agent, any model is just a text-in/text-out box: <code>complete(messages) → Completion</code>. Swapping the brain never changes agent code — that swap <em>is</em> the lesson.</p>
     <div class="grid">
@@ -312,7 +312,7 @@ Model (next turn): writes a correct Action: calculator / Action Input: ...</pre>
   </section>
 
   <!-- ============ Play 6: Self-check quiz ============ -->
-  <section class="play" id="play-6">
+  <section class="play" id="play-6" style="display:none">
     <h2><span class="num">6</span><span class="title">Self-check quiz</span></h2>
     <p class="story">Test your understanding of the agent's internals. Click an answer — feedback appears inline.</p>
     <div class="quiz">
@@ -472,8 +472,7 @@ const TRACE_BUDGET_EXHAUSTED = [{"ts": 1793632365.9475026, "iter": 1, "kind": "s
     rows.push(`ts: ${new Date(e.ts*1000).toISOString()}`);
     rows.push("");
     rows.push(JSON.stringify(e.payload, null, 2));
-    detail.textContent = rows.join("
-");
+    detail.textContent = rows.join("\n");
     // gauge: estimate tokens as iter-based proxy
     const pct = Math.round((i + 1) / Math.max(traceEvents.length,1) * 100);
     fill.style.width = pct + "%";

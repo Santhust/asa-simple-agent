@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>asa — the illustrated guide</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #fbfbf9; color: #1f2430; line-height: 1.5; }
+  header { background: #1f2430; color: #dce0ea; padding: 1rem 1.25rem; }
+  header h1 { margin: 0 0 0.25rem 0; font-size: 1.5rem; letter-spacing: 0.02em; }
+  header p { margin: 0; font-size: 0.95rem; color: #8f97aa; }
+  .deck { max-width: 1060px; margin: 0 auto; padding: 1rem 1.25rem 2rem; }
+  nav.toc { border-bottom: 1px solid #c9cfda; margin-bottom: 1.5rem; padding-bottom: 0.75rem; }
+  nav.toc h2 { margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5a6472; }
+  nav.toc ol { margin: 0; padding: 0; list-style: none; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  nav.toc li { margin: 0; }
+  nav.toc a { text-decoration: none; color: #3d5f80; font-size: 0.9rem; padding: 0.2rem 0.5rem; border: 1px solid #c9cfda; border-radius: 4px; }
+  nav.toc a:hover { background: #eef1f5; }
+  nav.toc a.current { background: #dcefe0; border-color: #2e7d4f; color: #1f6fb2; font-weight: 700; }
+
+  section.topic { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e6eb; }
+  section.topic:last-child { border-bottom: none; }
+  .topic h2 { margin: 0 0 0.5rem 0; font-size: 1.35rem; display: flex; align-items: baseline; gap: 0.5rem; }
+  .topic h2 .num { color: #2e7d4f; font-weight: 800; }
+  .topic h2 .title { color: #1f2430; }
+  .topic p.story { font-size: 1.05rem; color: #3c4456; max-width: 880px; margin: 0 0 1rem 0; }
+
+  .illustration { margin: 1rem 0; }
+  .illustration svg { display: block; margin: 0 auto; background: #fff; border: 1px solid #c9cfda; border-radius: 8px; }
+  .caption { text-align: center; font-size: 0.85rem; color: #5a6472; margin-top: 0.4rem; max-width: 880px; margin-left: auto; margin-right: auto; }
+
+  .in-repo { margin-top: 1rem; padding: 0.75rem 1rem; background: #eef1f5; border-left: 4px solid #3d5f80; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+  .in-repo h4 { margin: 0 0 0.4rem 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #3d5f80; }
+  .in-repo ul { margin: 0; padding-left: 1.1rem; color: #3c4456; }
+  .in-repo li { margin-bottom: 0.2rem; }
+  .in-repo code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; color: #1f6fb2; }
+
+  .quiz { margin-top: 1rem; }
+  .quiz h4 { margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #5a6472; }
+  .q { margin-bottom: 0.75rem; padding: 0.6rem 0.9rem; background: #fff; border: 1px solid #c9cfda; border-radius: 6px; }
+  .q p { margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #1f2430; }
+  .opts { display: flex; flex-direction: column; gap: 0.3rem; }
+  .opts button { text-align: left; padding: 0.35rem 0.7rem; border: 1px solid #c9cfda; border-radius: 4px; background: #fff; cursor: pointer; font: inherit; font-size: 0.9rem; color: #3c4456; }
+  .opts button:hover { border-color: #3d5f80; background: #eef1f5; }
+  .feedback { margin-top: 0.4rem; font-size: 0.88rem; display: none; }
+  .feedback.ok { color: #2e7d4f; font-weight: 700; }
+  .feedback.bad { color: #b4552d; font-weight: 700; }
+
+  .nav { display: flex; justify-content: space-between; padding: 1.2rem 0 1rem; border-top: 1px solid #c9cfda; margin-top: 1rem; }
+  .nav button { text-decoration: none; padding: 0.4rem 1rem; border: 1px solid #8f97aa; border-radius: 6px; background: #fff; color: #1f2430; cursor: pointer; font: inherit; font-size: 0.9rem; }
+  .nav button:hover:not(:disabled) { background: #dce0ea; }
+  .nav button:disabled { opacity: 0.4; cursor: default; }
+  .nav .cur { font-size: 0.85rem; color: #5a6472; }
+
+  footer { font-size: 0.8rem; color: #8f97aa; padding: 1rem 1.25rem; border-top: 1px solid #c9cfda; }
+</style>
+</head>
+<body>
+<header>
+  <h1>asa — the illustrated guide</h1>
+  <p>A ReAct-style agent built from scratch, one internal at a time. Each topic shows the idea, a hand-drawn diagram, and where it lives in the code.</p>
+</header>
+
+<div class="deck">
+  <nav class="toc">
+    <h2>Topics</h2>
+    <ol>
+      <li><a href="#topic-1" class="current">1 · What is an agent?</a></li>
+      <li><a href="#topic-2">2 · The loop</a></li>
+      <li><a href="#topic-3">3 · Context / memory</a></li>
+      <li><a href="#topic-4">4 · Tools, registry &amp; prompt-craft</a></li>
+      <li><a href="#topic-5">5 · Parsing / two protocols</a></li>
+      <li><a href="#topic-6">6 · The brain zoo</a></li>
+      <li><a href="#topic-7">7 · Observability &amp; failure modes</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ Topic 1: What is an agent? ============ -->
+  <section class="topic" id="topic-1">
+    <h2><span class="num">1</span><span class="title">What is an agent?</span></h2>
+    <p class="story">A model can only say words. An agent is the loop that turns those words into effects on the world: it asks a model what to do, reads the reply as a call to a tool, runs the tool, feeds the result back as an Observation, and repeats until the model gives a Final Answer. The model supplies intent; the loop supplies procedure.</p>
+
+    <div class="illustration">
+      <svg width="700" height="340" viewBox="0 0 700 340" font-family="system-ui, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+        <defs>
+          <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="#2e7d4f"/>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="700" height="340" fill="#fbfbf9"/>
+        <!-- Task -->
+        <rect x="30" y="130" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="89" y="152" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Task</text>
+        <text x="89" y="169" font-size="10" fill="#3c4456" text-anchor="middle">"compute 7*6"</text>
+        <!-- Model -->
+        <rect x="238" y="110" width="118" height="104" rx="7" fill="#cfe3f5" stroke="#1f6fb2" stroke-width="1.75"/>
+        <text x="297" y="134" font-size="12" font-weight="700" fill="#123a5e" text-anchor="middle">Brain (model)</text>
+        <text x="297" y="152" font-size="10" fill="#3c4456" text-anchor="middle">reads the transcript</text>
+        <text x="297" y="166" font-size="10" fill="#3c4456" text-anchor="middle">writes a letter</text>
+        <!-- ToolCall -->
+        <rect x="446" y="110" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="505" y="132" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">ToolCall</text>
+        <text x="505" y="149" font-size="10" fill="#3c4456" text-anchor="middle">calculator(expr="7*6")</text>
+        <!-- Tool runs -->
+        <rect x="238" y="240" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="297" y="262" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Tool runs</text>
+        <text x="297" y="276" font-size="10" fill="#3c4456" text-anchor="middle">7*6 = 42</text>
+        <!-- Observation -->
+        <rect x="446" y="240" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="505" y="262" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Observation</text>
+        <text x="505" y="276" font-size="10" fill="#3c4456" text-anchor="middle">fed back into memory</text>
+        <!-- arrows -->
+        <line x1="148" y1="162" x2="238" y2="162" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="356" y1="162" x2="446" y2="162" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="297" y1="214" x2="297" y2="240" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="356" y1="272" x2="446" y2="272" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="496" y1="162" x2="564" y2="162" stroke="#7a8794" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="520" y="156" font-size="10" fill="#7a8794" text-anchor="middle">Final Answer</text>
+      </svg>
+    </div>
+    <div class="caption">A model writes words; the agent's loop turns a ToolCall into a Tool result, feeds it back as an Observation, and stops on a Final Answer.</div>
+
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>asa/agent.py:run()</code> — the loop (Task→Memory→Brain→reply→Observation→repeat)</li>
+        <li><code>asa/tool.py:ToolCall</code> — the only vocabulary the core speaks: <code>name</code> + <code>args</code></li>
+        <li><code>asa/agent.py:210</code> — <code>verdict.kind == "final_answer"</code> ends the run</li>
+      </ul>
+    </div>
+
+    <div class="quiz">
+      <h4>Self-check</h4>
+      <div class="q">
+        <p>What does an agent add on top of a plain model?</p>
+        <div class="opts">
+          <button onclick="check(this, true)">A loop that runs tools and feeds results back</button>
+          <button onclick="check(this, false)">Bigger parameter count</button>
+          <button onclick="check(this, false)">A database of facts</button>
+        </div>
+        <div class="feedback" id="q1a"></div>
+      </div>
+      <div class="q">
+        <p>What is the <em>only</em> vocabulary the agent core speaks?</p>
+        <div class="opts">
+          <button onclick="check(this, false)">JSON text</button>
+          <button onclick="check(this, true)">ToolCall(name, args)</button>
+          <button onclick="check(this, false)">SQL queries</button>
+        </div>
+        <div class="feedback" id="q1b"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Topics 2-7 are placeholders filled in M11.2 through M11.7 -->
+  <section class="topic" id="topic-2" style="border-top: 1px dashed #c9cfda; padding-top: 1.5rem;">
+    <h2><span class="num">2</span><span class="title">The loop</span></h2>
+    <p class="story">(M11.2 — coming next)</p>
+  </section>
+  <section class="topic" id="topic-3" style="border-top: 1px dashed #c9cfda; padding-top: 1.5rem;">
+    <h2><span class="num">3</span><span class="title">Context / memory</span></h2>
+    <p class="story">(M11.3 — coming next)</p>
+  </section>
+  <section class="topic" id="topic-4" style="border-top: 1px dashed #c9cfda; padding-top: 1.5rem;">
+    <h2><span class="num">4</span><span class="title">Tools, registry &amp; prompt-craft</span></h2>
+    <p class="story">(M11.4 — coming next)</p>
+  </section>
+  <section class="topic" id="topic-5" style="border-top: 1px dashed #c9cfda; padding-top: 1.5rem;">
+    <h2><span class="num">5</span><span class="title">Parsing / two protocols</span></h2>
+    <p class="story">(M11.5 — coming next)</p>
+  </section>
+  <section class="topic" id="topic-6" style="border-top: 1px dashed #c9cfda; padding-top: 1.5rem;">
+    <h2><span class="num">6</span><span class="title">The brain zoo</span></h2>
+    <p class="story">(M11.6 — coming next)</p>
+  </section>
+  <section class="topic" id="topic-7" style="border-top: 1px dashed #c9cfda; padding-top: 1.5rem;">
+    <h2><span class="num">7</span><span class="title">Observability &amp; failure modes</span></h2>
+    <p class="story">(M11.7 — coming next)</p>
+  </section>
+
+  <div class="nav">
+    <button id="prev" type="button" disabled>← prev</button>
+    <span class="cur">topic 1 / 7</span>
+    <button id="next" type="button">next →</button>
+  </div>
+</div>
+
+<footer>asa — a simple agent (educational). Built sub-milestone by sub-milestone; see PLAN.md. Diagrams hand-authored SVG; quizzes are static JS, no server.</footer>
+
+<script>
+  /* ---- prev/next topic nav ---- */
+  const topics = ["topic-1","topic-2","topic-3","topic-4","topic-5","topic-6","topic-7"];
+  let idx = 0;
+  function show(i){ topics.forEach((t,k)=>{document.getElementById(t).style.display = (k===i)?"block":"none";}); document.getElementById("prev").disabled = i===0; document.getElementById("next").disabled = i===topics.length-1; document.querySelector(".cur").textContent = "topic "+(i+1)+" / "+topics.length; }
+  document.getElementById("prev").onclick = ()=>show(Math.max(0,idx-1));
+  document.getElementById("next").onclick = ()=>show(Math.min(topics.length-1,idx+1));
+  show(0);
+
+  /* ---- self-check quizzes ---- */
+  function check(btn, correct){
+    const q = btn.closest(".q");
+    const fb = q.querySelector(".feedback");
+    fb.style.display = "block";
+    if(correct){ fb.textContent = "Correct. "; fb.className = "feedback ok"; }
+    else { fb.textContent = "Not quite. Try again."; fb.className = "feedback bad"; }
+    Array.from(q.querySelectorAll("button")).forEach(b=>{ b.disabled = true; if(b===btn){ b.style.background = correct ? "#dcefe0" : "#f6e7e5"; } });
+  }
+</script>
+</body>
+</html>

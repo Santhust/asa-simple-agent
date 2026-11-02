@@ -44,6 +44,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--no-tools", action="store_true",
                    help="wire an explicitly EMPTY registry — the agent reads the "
                         "honest 'you have no tools' paragraph (M3.2's empty catalogue)")
+    p.add_argument("--native", action="store_true",
+                   help="M9: use native API function calling instead of ReAct text "
+                        "(requires --brain gemini; default OFF, text path unchanged)")
     p.add_argument("--explain", action="store_true", help="add the deeper 'why' annotations")
     p.add_argument("--no-color", action="store_true", help="plain output (also honors NO_COLOR)")
     return p.parse_args(argv)
@@ -53,7 +56,11 @@ def main(argv=None) -> int:
     args = parse_args(argv)
 
     brain_cls = BRAINS[args.brain]
-    brain: Brain = brain_cls(model=args.model) if args.model else brain_cls()
+    if args.native and brain_cls is not GeminiBrain:
+        raise SystemExit(
+            f"--native requires --brain gemini (native-capable), got {args.brain!r}")
+    native_kwargs = {"native": True} if (args.native and brain_cls is GeminiBrain) else {}
+    brain: Brain = brain_cls(model=args.model, **native_kwargs) if args.model else brain_cls(**native_kwargs)
     if args.script:
         brain = MockBrain(script=args.script, model=brain.model)
 
@@ -61,6 +68,8 @@ def main(argv=None) -> int:
     N.kv("brain", brain.describe())
     N.kv("task", repr(args.task))
     N.kv("max_steps", args.max_steps)
+    if args.native:
+        N.kv("protocol", "native (function calling)")
     if args.script:
         N.warn(
             f"--script is active: selected brain {args.brain!r} is replaced by a "

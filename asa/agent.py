@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from . import narrate as N
 from .brain import Brain, Completion, GeminiUnavailable, OllamaUnavailable
 from .memory import ContextWindow
+from .protocol_native import build_tools_payload, parse_function_call
 from .protocol_react import parse
 from .registry import ToolRegistry
 from .tool import ToolCall
@@ -132,18 +133,25 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             if self.narrate:
                 self._narrate_context()
 
-            # ---- THE SEAM (M4.6) ----------------------------------------
-            # ---- THE SEAM (M4.6) ----------------------------------------
-            # M6.3b ordering (fixed 2026-11-02 during M8.2's archaeology): the
-            # brain.request event MUST emit BEFORE the call — it used to fire
-            # after memory.add, so every recorded snapshot contained the reply
-            # it claimed to have prompted (evidence corrupted, detective
-            # misled, probe replays poisoned). Now: request -> call ->
-            # response -> reply-stored.
-            write_event("brain.request", {"prompt": [m.render() for m in self.memory.messages]})
+            # ---- THE SEAM (M4.6 + M9: two protocols, one core) ----
+            # Which protocol does this brain speak? The brain decides (supports_native);
+            # the loop only asks. Textual ReAct (M4) parses a prose letter; native (M9)
+            # reads the structured functionCall the API produced — no regex, no repair.
+            # native is only real when the brain offers tool schemas, so an empty
+            # registry falls back to text mode automatically.
+            native = self.brain.supports_native() and len(self.registry) > 0
+            tools = build_tools_payload(self.registry) if native else None
+
+            # M6.3b ordering: brain.request emits BEFORE the call — the snapshot
+            # must not contain the reply it claims to prompt.
+            write_event("brain.request", {
+                "prompt": [m.render() for m in self.memory.messages],
+                "protocol": "native" if native else "react",
+            })
 
             try:
-                completion = self.brain.complete(self.memory.messages)
+                completion = (self.brain.complete(self.memory.messages, tools=tools)
+                              if native else self.brain.complete(self.memory.messages))
             except (OllamaUnavailable, GeminiUnavailable) as e:
                 # M8.4.4: brain failures are recorded as trace events, not
                 # propagated as crashes. The detective needs them in evidence.
@@ -165,8 +173,17 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             if self.narrate:
                 self._narrate_completion(completion)
 
-            verdict = parse(reply)
-            write_event("protocol.raw", {"raw": reply})
+            # ---- THE SEAM (M4.6 + M9) ---------------------------------------
+            if native:
+                # Native function-calling path: the API hands us structured calls
+                # — no regex, no kwargs parser, no repair, args already typed.
+                write_event("protocol.raw", {"raw": reply,
+                                             "tool_calls": completion.tool_calls})
+                verdict = parse_function_call(completion)
+            else:
+                # Textual ReAct path: parse the letter.
+                write_event("protocol.raw", {"raw": reply})
+                verdict = parse(reply)
 
             if verdict.kind == "thought_action" and verdict.action is not None:
                 # Run the tool, put Observation back into memory

@@ -276,6 +276,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M8.1 GeminiBrain skeleton (3rd dialect, header-only key, redaction, thought-part filter; live smoke RAN; budget=0 rejected → pin amended)
   - stage: M8.2 --brain gemini wired; first cloud run (correct letter, empty→note→heal); silence named: MALFORMED_RESPONSE; M6 request-order debt fixed (M6.3b)
   - stage: M8.3 rate-limit fail-soft: 429 retries once (Retry-After honored), then guidance; 403 immediate; fake-transport tests green
+  - stage: M8.4.1 run_id + session.start: every Event carries run_id; session.start written by agent.run(); 4 new tests
   - [x] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
         tests with fake transport; live smoke skips when no key/network. *(Built + live-probed
         2026-11-02: 9 offline tests + live smoke RAN (key present — first real Gemini words);
@@ -303,12 +304,20 @@ Same stream feeds the narrated CLI and the HTML playground player.
         default), other HTTP errors raise immediately; guidance names the rate limit without
         the key; 3 offline tests prove retry-once, Retry-After honored, 403-immediate. Exact
         free-tier RPM/TPM/RPD pending the user's glance at the AI Studio rate-limit page.)*
-  - [ ] **M8.4** _The Detective Kit_ — (1) failure taxonomy: named failure kinds in trace payloads
-        (empty_reply · protocol_drift · tool_error · network · budget_exhausted · rate_limited);
-        (2) run_id on session.start so runs are separable; (3) `lab/detective_lab.py` — reads a
-        trace, extracts failing brain.request contexts, converts render()→native, replays against
-        the brain (one-variable bisect), offline-first. Exercised on frozen real failure shapes
-        (the M7 letters + scripted 429s), MockBrain style.
+  - [x] **M8.4.1** _run_id + session.start_ — every run gets its own identity so the
+        detective can separate runs in the shared trace file. *(Built 2026-11-02: run_id
+        minted on reset_session(), stamped on every Event, session.start written by
+        agent.run(); 4 new tests.)*
+  - [ ] **M8.4.2** _Failure taxonomy_ — named failure kinds in trace payloads
+        (empty_reply · protocol_drift · tool_error · network · budget_exhausted ·
+        rate_limited).
+  - [ ] **M8.4.3** _lab/detective_lab.py_ — reads a trace, extracts failing
+        brain.request contexts, converts render()→native, replays against the brain
+        (one-variable bisect), offline-first.
+  - [ ] **M8.4.4** _Catch brain exceptions in agent.run()_ — network/rate_limited
+        failures recorded as trace events instead of propagating out, so the trace
+        is complete for every run.
+  - [ ] **M8.4.5** _Close-out_ — PLAN tick + stage notes; full pytest.
   - [ ] **M8.5** _Close-out_ — PLAN tick + stage notes; journey picture (no debt this time);
         full pytest; AGENTS count refresh.
 - [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct

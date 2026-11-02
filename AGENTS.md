@@ -12,11 +12,13 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
        -> ToolRegistry -> tool runs -> observation back into context
        terminate on `Final Answer:` | max_steps | failure policy.
 - `asa/` package: memory.py, tool.py, registry.py, brain.py, agent.py, `tools/` + `lab/`
-  (single-part scripts). Planned: protocol_react.py (M4), protocol_native.py (M9), trace.py (M6).
+  (single-part scripts). Built: protocol_react.py (M4), trace.py (M6). Planned: protocol_native.py (M9).
 
 ## Brain zoo (config-driven: model is a string; swappable, agent code identical)
 - `MockBrain`   : deterministic, no deps (tests, offline demo, golden traces)
-- `OllamaBrain` : local; llama3.2:1b default (Pi5 8GB ~7-18 tok/s); stdlib HTTP, no pip dep
+- `OllamaBrain` : local; **lfm3:latest** default (1.7B, Q4_K_M, 256K ctx; native tools+thinking;
+                  Pi5 8GB; stdlib HTTP, no pip dep). *(Change of plan 2026-11-02: lfm3 replaces
+                  llama3.2:1b — user installed + tested it under Ollama, same localhost:11434.)*
 - `GeminiBrain` : Google free tier, Gemini 3.1 / 3.5 Flash Lite
                   (15 RPM / 250K TPM / 500 RPD) + Gemma 4 26B / 31B by name; key available
 - `GPT2Brain`   : INTENTIONAL FAILURE demo (base LM, not instruction-tuned)
@@ -76,7 +78,8 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
 ## Commands
 (CANONICAL — kept true at every close-out)
 - `python run.py --task "..." [--brain mock] [--model TAG] [--max-steps N] [--script "…" …]
-  [--no-tools] [--explain] [--no-color]`   (today's real flags; `--trace` lands in M6)
+  [--no-tools] [--explain] [--no-color]`   (today's real flags; M6 trace always writes
+  `asa/traces/trace.jsonl` — no `--trace` flag needed)
 - `python bench.py --task "..."`           (planned M7+ — same task across brains, side by side)
 - `python serve.py`                        (planned M13 — live SSE mode for the playground)
-- `python -m pytest`                       (86 tests; run after every sub-milestone)
+- `python -m pytest`                       (113 tests; run after every sub-milestone)

@@ -15,6 +15,12 @@ verbose narration, checkpointing with the user after each milestone.
 3. **Capability**: ReAct loop with tools (reason -> act -> observe -> repeat).
 4. **Backend unknown upfront** -> build a swappable "brain zoo" + `bench.py` comparison rig.
 5. **Local model**: llama3.2:1b via Ollama (Pi5, 8GB RAM, ~7-18 tok/s). qwen2.5:1.5b = backup.
+   - *(Change of plan 2026-11-02: **lfm3** replaces llama3.2:1b as the local default. User has
+     it installed and tested under Ollama. Facts from `ollama show`: tag `lfm3:latest`, 1.7B
+     params, Q4_K_M quant, 256K context, temp 0.1 default. Two capability surprises with
+     design weight: (a) native **tools** — M9 function-calling can ALSO be taught locally,
+     not only via Gemini; (b) **thinking** mode ON by default — interacts with ReAct text
+     parsing; policy decided at M7.0.)*
 6. **Cloud model**: Google free tier. Key already available. Rate limits (per user's AI Studio):
    - Gemini 3.1 / 3.5 Flash Lite: **15 RPM / 250K TPM / 500 RPD**
    - Gemma 4 26B / 31B (via Google API): **30 RPM / 16K TPM / 14.4K RPD**
@@ -119,7 +125,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
 | Brain      | Where  | Notes |
 |------------|--------|-------|
 | MockBrain  | local  | deterministic, no deps; tests / offline / golden traces |
-| OllamaBrain| local  | llama3.2:1b default; stdlib HTTP (no pip); zero-cost path |
+| OllamaBrain| local  | lfm3:latest default (1.7B, Q4_K_M, 256K ctx; native tools+thinking); stdlib HTTP (no pip); zero-cost path |
 | GeminiBrain| cloud  | Gemini 3.1/3.5 Flash Lite (15 RPM...) + Gemma 4 by name |
 | GPT2Brain  | local  | INTENTIONAL-FAILURE demo: why instruction-tuning matters |
 
@@ -158,18 +164,50 @@ Same stream feeds the narrated CLI and the HTML playground player.
     - stage: M4.6 seam flipped → agent reads and acts (tools run, observations back)
     - stage: M4.7 parser lab + narrated demo
     - stage: M4.8 close-out
-- [ ] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests
+- [x] **M5** Full loop + control: Final Answer / max_steps / termination; golden-trace tests  
+  *(Closed 2026-11 (honest tick 2026-11-02): tests were committed in the M5 sessions but the checkbox ticks were missed — the code and 113 green tests were already real.)*
   **Sub-milestones (one concept each):**
-  - [ ] **M5.1** _Final Answer flows_ — when parser sees "Final Answer:", the loop stops immediately; tests verify proper termination.
-  - [ ] **M5.2** _max_steps guard policy_ — step budget becomes the authoritative termination control; tests verify loop stops on budget.
-  - [ ] **M5.3** _golden-trace tests_ — record perfect runs for documentation and M11 docs.
-  - [ ] **M5.4** _Close-out_ — PLAN tick + `stage:` notes, journey picture, full `pytest -q`.
+  - [x] **M5.1** _Final Answer flows_ — when parser sees "Final Answer:", the loop stops immediately; tests verify proper termination.
+  - [x] **M5.2** _max_steps guard policy_ — step budget becomes the authoritative termination control; tests verify loop stops on budget.
+  - [x] **M5.3** _golden-trace tests_ — record perfect runs for documentation and M11 docs.
+  - [x] **M5.4** _Close-out_ — PLAN tick + `stage:` notes, full `pytest -q` green.
   - stage: M5.1 Final Answer flows (parser verdict → immediate termination)
   - stage: M5.2 max_steps guard policy (step budget stops loops)
   - stage: M5.3 golden-trace tests (record perfect runs for M11 docs)
-  - stage: M5.4 close-out (PLAN tick, journey picture, full tests)
-- [ ] **M6** Trace layer: JSONL event schema (CLI + playground share it)
-- [ ] **M7** OllamaBrain + llama3.2:1b: real local run; bench vs Mock
+  - stage: M5.4 close-out (PLAN tick, full tests)
+- [x] **M6** Trace layer: JSONL event schema — every internal step becomes one JSON line
+  (`asa/trace.py`; agent.py instruments the whole loop). *(Closed 2026-11 · honest tick 2026-11-02.)*
+  **Sub-milestones (one concept each):**
+  - [x] **M6.1** _Event kinds + schema_ — 14 kinds (session.start … agent.answer), each event `{ts, iter, kind, payload}`; JSONL roundtrip proven.
+  - [x] **M6.2** _Writer + reader_ — `write_event()` (atomic append), `read_events(since=, kind_filter=)`, `clear_trace()`; pure, no brain/tools dependency.
+  - [x] **M6.3** _Agent wiring_ — agent.py emits brain.request/response, protocol.raw/parsed/error, tool.lookup/invoke/result, loop.turn, loop.terminate, agent.answer.
+  - [x] **M6.4** _Test harness_ — `tests/conftest.py` fixture resets trace state between tests; 6 trace tests + full suite green (113).
+  - [~] **M6.5** _Close-out_ — PLAN tick + full pytest done; journey-picture refresh + AGENTS.md test-count refresh **deferred to the M7 close-out pass** (one picture pass covers both).
+  - stage: M6.1 14 event kinds, {ts,iter,kind,payload} schema
+  - stage: M6.2 write/read/clear trace (pure JSONL layer)
+  - stage: M6.3 agent loop instrumented (requests, responses, tools, termination)
+  - stage: M6.4 conftest fixture + 113 tests green
+  - stage: M6.5 close-out (picture + count refresh deferred to M7 close)
+- [ ] **M7** OllamaBrain + **lfm3**: first real local model; bench vs Mock
+  *(Model change 2026-11-02: lfm3 replaces llama3.2:1b — user has it installed and tested under Ollama,
+  same `localhost:11434`. Facts from `ollama show`: tag `lfm3:latest`, 1.7B params, Q4_K_M quant,
+  256K context, temp 0.1 default, license LFM Open v1.0. Capability surprises: native **tools**
+  (M9 function-calling teachable locally too, not only Gemini) and **thinking** ON by default
+  (interacts with ReAct text parsing — policy decided at M7.0).)*
+  **Sub-milestones (one concept each):**
+  - [ ] **M7.0** _Map + decisions_ (no code): endpoint localhost:11434; `/api/chat` to match our
+        message-list → Completion shape; thinking policy for ReAct (off? captured separately?);
+        model tag as config string `lfm3:latest`; stdlib HTTP only (no pip); timeout/retry for slow local inference.
+  - [ ] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
+        with a fake transport + live smoke test that SKIPS when Ollama isn't running.
+  - [ ] **M7.2** _First real words_ — narrated live run `--brain ollama`; observe thinking behavior
+        in practice, decide where it goes (trace? memory? nowhere?).
+  - [ ] **M7.3** _Does the real model write a parseable letter?_ — one-step calculator task;
+        watch M4.3's gentle repair catch real-world format drift.
+  - [ ] **M7.4** _bench.py_ — same task through MockBrain vs OllamaBrain side-by-side; timing,
+        tokens, success; pin lfm3 throughput on this Pi5 (stage note).
+  - [ ] **M7.5** _Close-out_ — PLAN tick + stage notes; journey-picture pass (also covers M6.5 debt);
+        full `pytest -q`; refresh AGENTS.md test count (currently stale: says 86, actual 113+).
 - [ ] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; pin limits
 - [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct
 - [ ] **M10** GPT2Brain failure demo

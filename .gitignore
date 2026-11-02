@@ -11,3 +11,5 @@ NOTES.md
 
 # asa outputs
 out/
+# runtime trace output (M6): written every run, regenerable
+asa/traces/

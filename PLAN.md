@@ -188,7 +188,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M6.3 agent loop instrumented (requests, responses, tools, termination)
   - stage: M6.4 conftest fixture + 113 tests green
   - stage: M6.5 close-out (picture + count refresh deferred to M7 close)
-- [ ] **M7** OllamaBrain + **lfm3**: first real local model; bench vs Mock
+- [x] **M7** OllamaBrain + **lfm3**: first real local model; bench vs Mock
   *(Model change 2026-11-02: lfm3 replaces llama3.2:1b — user has it installed and tested under Ollama,
   same `localhost:11434`. Facts from `ollama show`: tag `lfm3:latest`, 1.7B params, Q4_K_M quant,
   256K context, temp 0.1 default, license LFM Open v1.0. Capability surprises: native **tools**
@@ -214,6 +214,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M7.2 --brain ollama wired; first narrated real run (proper ReAct letter, final_answer)
   - stage: M7.3 reality check: think=false falsified (empty content) -> amended to True; drift self-repaired on real run; trace-isolation bug fixed
   - stage: M7.4 bench pinned: lfm3 7.2 tok/s on Pi5 (104s wall, 3 steps); mock scriptless = honest procedural fail
+  - stage: M7.5 close-out pass: SVG unfrozen from M3 state; M4-M7 rows retroactive; 12 slides; 132 green
   - [x] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
         with a fake transport + live smoke test that SKIPS when Ollama isn't running.
         *(Built 2026-11-02: transport injectable, 8 offline tests + live smoke (RAN — Ollama
@@ -234,8 +235,13 @@ Same stream feeds the narrated CLI and the HTML playground player.
         ran live — mock ✗ max_steps (scriptless factory: procedural failure, honest),
         ollama ✓ final_answer: 3 steps, 553 tokens, 104s wall, **7.2 tok/s pinned**.
         "ok" = PROCEDURAL success only, never a truth claim. 6 offline tests.)*
-  - [ ] **M7.5** _Close-out_ — PLAN tick + stage notes; journey-picture pass (also covers M6.5 debt);
+  - [x] **M7.5** _Close-out_ — PLAN tick + stage notes; journey-picture pass (also covers M6.5 debt);
         full `pytest -q`; refresh AGENTS.md test count (currently stale: says 86, actual 113+).
+        *(Done 2026-11-02: full suite 132 passed incl. live smoke; SVG overhauled — was still frozen
+        at git rev b7e05d2/M3-close; M4–M7 rows drawn RETROACTIVELY at this pass (their close-outs
+        skipped the picture pass), documented in the row header; roadmap M4–M7 solid; brain-zoo +
+        inventory panels updated; 1 new frame m7-stage-00.png → 12 slides in timeline.html (5KB)
+        → journey.gif 12 frames. Truth-sweep side quest: m4 close's skipped pass acknowledged.)*
 - [ ] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; pin limits
 - [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct
 - [ ] **M10** GPT2Brain failure demo

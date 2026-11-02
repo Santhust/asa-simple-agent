@@ -26,7 +26,7 @@ FRAMES_DIR = ROOT / "out" / "frames"
 DEST_DIR = Path(__file__).resolve().parent / "frames"
 OUT = Path(__file__).resolve().parent / "timeline.html"
 
-TITLE = "asa — the journey in pictures · M1 → M3 (complete)"
+TITLE = "asa — the journey in pictures · M1 → M7 (complete)"
 
 CAPTIONS = {
     "m1-stage-00.png": "M1 — the shell: run.py → Message → Brain (→ MockBrain) → Completion → Narrator",
@@ -40,6 +40,9 @@ CAPTIONS = {
     "m3-stage-04.png": "M3·4 — the stateful pair: notes (numbered ledger, ×2 hands) + plan-board (stable ids, ×3 hands); state lives OUTSIDE the hands in injected stores",
     "m3-stage-05.png": "M3·5 — the wiring: default_tools() builds one fresh world per agent, and the catalogue (the model's manual page) rides the system prompt — the loop still cannot act",
     "m3-stage-06.png": "M3 close-out — tools & registry complete: 7 hands, a catalogue in the prompt, one fresh world per agent; the parser is M4's job",
+    "m7-stage-00.png": ("M7 close-out — the first REAL brain: OllamaBrain (lfm3:latest, 1.7B) behind the same "
+                        "seam; M4 protocol reader, M5 control and M6 trace drawn into the diagram retroactively "
+                        "(their close-outs skipped the picture pass — code+tests were real); bench pin: 7.2 tok/s on the Pi5"),
 }
 
 CSS = """

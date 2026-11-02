@@ -12,12 +12,12 @@
   <rect x="0" y="0" width="1060" height="882" fill="#fbfbf9"/>
 
   <!-- ======================= header ======================= -->
-  <text x="40" y="34" font-size="22" font-weight="700" fill="#1f2430">asa — state of functionality · Milestone 3 complete (tools &amp; registry)</text>
-  <text x="40" y="56" font-size="13" fill="#5a6472">Every part below is exactly as it exists in the repo today (git rev b7e05d2). M3 ran as seven concept sub-milestones; badge + stage log below.</text>
+  <text x="40" y="34" font-size="22" font-weight="700" fill="#1f2430">asa — state of functionality · Milestone 7 close-out (first REAL brain)</text>
+  <text x="40" y="56" font-size="13" fill="#5a6472">Every part below is exactly as it exists in the repo at the M7 close-out commit. M1–M7 were built sub-milestone by sub-milestone; badge + stage log below.</text>
 
   <g>
     <rect x="872" y="24" width="148" height="30" rx="6" fill="#2e7d4f"/>
-    <text x="946" y="44" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">M3 complete ✓</text>
+    <text x="946" y="44" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">M7 close-out ✓</text>
   </g>
 
   <!-- legend -->
@@ -56,11 +56,11 @@
 
   <!-- 4 · MockBrain -->
   <rect x="40" y="365" width="270" height="78" rx="8" fill="#cfe3f5" stroke="#1f6fb2" stroke-width="1.75"/>
-  <text x="52" y="387" font-size="14" font-weight="700" fill="#123a5e">MockBrain — text in / text out</text>
+  <text x="52" y="387" font-size="14" font-weight="700" fill="#123a5e">Brain zoo — one seam, many minds</text>
   <text x="300" y="387" font-size="11" font-weight="700" fill="#1f6fb2" text-anchor="end">core ✓</text>
-  <text x="52" y="408" font-size="12" fill="#173a5c">canned reply · deterministic · offline</text>
-  <text x="52" y="423" font-size="11" fill="#3d5f80">+ estimate_tokens → asa/tokens.py</text>
-  <text x="52" y="437" font-size="11" fill="#3d5f80">brain.py:55 · BRAINS = {"mock": MockBrain}</text>
+  <text x="52" y="408" font-size="12" fill="#173a5c">MockBrain: canned · deterministic · offline (tests + golden runs)</text>
+  <text x="52" y="423" font-size="11" fill="#3d5f80">+ OllamaBrain (M7): lfm3:latest · /api/chat · think:True · 7.2 tok/s pinned</text>
+  <text x="52" y="437" font-size="11" fill="#3d5f80">gemini (M8) / gpt2 (M10) still dashed · BRAINS = {"mock", "ollama"}</text>
   <line x1="175" y1="443" x2="175" y2="458" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr-green)"/>
 
   <!-- 5 · Completion -->
@@ -111,21 +111,21 @@
   <path d="M978,186 V226 H526" fill="none" stroke="#9aa4ae" stroke-width="1.5" stroke-dasharray="5 4"/>
   <path d="M526,226 V185" fill="none" stroke="#2e7d4f" stroke-width="2.5" marker-end="url(#arr-green)"/>
   <text x="560" y="218" font-size="12" fill="#5a6472">up-arm is REAL: replies store back · M3·5 ✓ the catalogue rides in the system prompt</text>
-  <text x="380" y="252" font-size="12" fill="#5a6472">terminate on: Final Answer · <tspan fill="#2e7d4f" font-weight="700">max_steps ✓</tspan> · failure policy</text>
-  <text x="380" y="278" font-size="12" font-weight="700" fill="#1f6fb2">M3 complete: the agent SEES its hands — 7 tools + a catalogue in the prompt — and still touches nothing.</text>
-  <text x="380" y="294" font-size="11" fill="#5a6472">State is per-agent (one fresh world each) · --no-tools wires the honest empty page · M4 parses model text into ToolCall.</text>
+  <text x="380" y="252" font-size="12" fill="#5a6472">terminate on: <tspan fill="#2e7d4f" font-weight="700">Final Answer ✓</tspan> · <tspan fill="#2e7d4f" font-weight="700">max_steps ✓</tspan> · failure policy</text>
+  <text x="380" y="278" font-size="12" font-weight="700" fill="#1f6fb2">M7 close-out: a REAL brain writes the letters — lfm3 drifted, read the gentle note, repaired itself, touched the calculator, answered 42.</text>
+  <text x="380" y="294" font-size="11" fill="#5a6472">State is per-agent (one fresh world each) · --no-tools wires the honest empty page · M4's reader: parse / repair / answer, same seam for every brain.</text>
 
   <!-- Panel B · file inventory -->
   <rect x="360" y="330" width="660" height="114" rx="10" fill="#ffffff" stroke="#9aa4ae" stroke-width="1.5" stroke-dasharray="6 5"/>
   <text x="380" y="354" font-size="13" font-weight="700" fill="#1f2430">Physical repo today — everything that exists</text>
-  <text x="380" y="378" font-size="12" fill="#22303c"><tspan fill="#2e7d4f" font-weight="700">✓ </tspan>asa/{agent, brain, memory, tool, registry, narrate, tokens}.py · asa/tools/{calculator, clock, notes, plan_board}.py</text>
-  <text x="380" y="400" font-size="12" fill="#22303c"><tspan fill="#2e7d4f" font-weight="700">✓ </tspan>run.py · conftest.py · lab/{tool, registry, tools, state}_lab.py — one internal per script</text>
-  <text x="380" y="418" font-size="12" fill="#5a6472"><tspan fill="#b4552d" font-weight="700">✗ </tspan>not yet: ReAct parser (M4) · bench.py · serve.py · playground/ · docs/ 7-topic series</text>
-  <text x="380" y="436" font-size="11" fill="#5a6472">86 green: memory 10 · agent 10 · CLI 6 · tool 10 · registry 11 · calc 9 · clock 5 · notes 7 · board 10 · wiring 8</text>
+  <text x="380" y="378" font-size="12" fill="#22303c"><tspan fill="#2e7d4f" font-weight="700">✓ </tspan>asa/{agent, brain, memory, tool, registry, narrate, tokens, protocol_react M4, trace M6}.py · asa/tools/{calculator, clock, notes, plan_board}.py</text>
+  <text x="380" y="400" font-size="12" fill="#22303c"><tspan fill="#2e7d4f" font-weight="700">✓ </tspan>run.py · bench.py (M7.4) · tests/ · conftest.py · lab/{tool, registry, tools, state, parser}_lab.py — one internal per script</text>
+  <text x="380" y="418" font-size="12" fill="#5a6472"><tspan fill="#b4552d" font-weight="700">✗ </tspan>not yet: GeminiBrain (M8) · native calling (M9) · GPT2 fail-demo (M10) · docs/ 7-topic series · playground/ · serve.py</text>
+  <text x="380" y="436" font-size="11" fill="#5a6472">132 green: M0–M7 suites · M7 frozen real-letters (verbatim lfm3) · bench 6 · live smoke (skips when Ollama down) · trace isolation fixed</text>
 
   <!-- Panel C · roadmap -->
   <rect x="360" y="464" width="660" height="156" rx="10" fill="#ffffff" stroke="#9aa4ae" stroke-width="1.5" stroke-dasharray="6 5"/>
-  <text x="380" y="488" font-size="13" font-weight="700" fill="#1f2430">Roadmap — M2 → M13 (next up: M4, ReAct parser)</text>
+  <text x="380" y="488" font-size="13" font-weight="700" fill="#1f2430">Roadmap — M2 → M13 (next up: M8, GeminiBrain)</text>
   <g font-size="10" fill="#5a6472">
     <rect x="380" y="500" width="92" height="36" rx="6" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.25"/>
     <text x="426" y="515" font-size="11" font-weight="700" fill="#2e7d4f" text-anchor="middle">M2</text>
@@ -133,18 +133,18 @@
     <rect x="480" y="500" width="92" height="36" rx="6" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.25"/>
     <text x="526" y="515" font-size="11" font-weight="700" fill="#2e7d4f" text-anchor="middle">M3</text>
     <text x="526" y="529" text-anchor="middle">tools + registry ✓</text>
-    <rect x="580" y="500" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
-    <text x="626" y="515" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M4</text>
-    <text x="626" y="529" text-anchor="middle">ReAct parser</text>
-    <rect x="680" y="500" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
-    <text x="726" y="515" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M5</text>
-    <text x="726" y="529" text-anchor="middle">loop + control</text>
-    <rect x="780" y="500" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
-    <text x="826" y="515" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M6</text>
-    <text x="826" y="529" text-anchor="middle">trace JSONL</text>
-    <rect x="880" y="500" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
-    <text x="926" y="515" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M7</text>
-    <text x="926" y="529" text-anchor="middle">OllamaBrain</text>
+    <rect x="580" y="500" width="92" height="36" rx="6" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.25"/>
+    <text x="626" y="515" font-size="11" font-weight="700" fill="#2e7d4f" text-anchor="middle">M4</text>
+    <text x="626" y="529" text-anchor="middle">ReAct parser ✓</text>
+    <rect x="680" y="500" width="92" height="36" rx="6" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.25"/>
+    <text x="726" y="515" font-size="11" font-weight="700" fill="#2e7d4f" text-anchor="middle">M5</text>
+    <text x="726" y="529" text-anchor="middle">loop + control ✓</text>
+    <rect x="780" y="500" width="92" height="36" rx="6" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.25"/>
+    <text x="826" y="515" font-size="11" font-weight="700" fill="#2e7d4f" text-anchor="middle">M6</text>
+    <text x="826" y="529" text-anchor="middle">trace JSONL ✓</text>
+    <rect x="880" y="500" width="92" height="36" rx="6" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.25"/>
+    <text x="926" y="515" font-size="11" font-weight="700" fill="#2e7d4f" text-anchor="middle">M7</text>
+    <text x="926" y="529" text-anchor="middle">OllamaBrain ✓</text>
     <rect x="380" y="546" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
     <text x="426" y="561" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M8</text>
     <text x="426" y="575" text-anchor="middle">GeminiBrain</text>
@@ -168,17 +168,19 @@
 
   <!-- stage log: how this graphic grew -->
   <line x1="40" y1="636" x2="1020" y2="636" stroke="#d5dae0" stroke-width="1"/>
-  <text x="40" y="656" font-size="11" font-weight="700" fill="#5a6472">stage log · how this graphic grew  (M2's test steps 2 &amp; 4 have no picture — tests prove behavior, not architecture)</text>
+  <text x="40" y="656" font-size="11" font-weight="700" fill="#5a6472">stage log · how this graphic grew  (M4–M6 rows drawn retroactively at the M7 close — their close-outs skipped the picture pass; the code + tests were real)</text>
   <text x="40" y="674" font-size="11" fill="#8a94a1">M1    the shell — run.py → Message → Brain(→MockBrain) → Completion → Narrator</text>
-  <text x="40" y="690" font-size="11" fill="#8a94a1">M2·1  memory.py — ContextWindow added: append · token_count · trim (system sacred, oldest evicted first)</text>
-  <text x="40" y="706" font-size="11" fill="#8a94a1">M2·3  agent.py — Agent constructed: full hop Task→Memory→Brain→reply-stored · loop seam + max_steps guard</text>
-  <text x="40" y="722" font-size="11" fill="#8a94a1">M2·5  run.py — CLI now agent-driven: —max-steps + —script flags · memory gauges · answer/outcome result block</text>
-  <text x="40" y="738" font-size="11" fill="#8a94a1">M2·6  close-out — PLAN.md flip · timeline.html slideshow · final narrated run · journey.gif</text>
-  <text x="40" y="754" font-size="11" fill="#8a94a1">M3·1  tool.py — the hand's shape: Tool(name · description · schema · func) · ToolCall · ToolResult · lab/tool_lab.py</text>
-  <text x="40" y="770" font-size="11" fill="#8a94a1">M3·2  registry.py — the phonebook + manual page: dup→ValueError · miss→None · sorted names · catalogue rendered FROM the schema</text>
-  <text x="40" y="786" font-size="11" fill="#8a94a1">M3·3  asa/tools/ — calculator (pure, hand parser, no eval, length+depth guards) · clock (read-only, optional utc) · lab/tools_lab.py</text>
-  <text x="40" y="802" font-size="11" fill="#8a94a1">M3·4  stateful pair — notes (numbered ledger ×2) + plan-board (stable ids ×3): world is data OUTSIDE the hands · lab/state_lab.py</text>
-  <text x="40" y="818" font-size="11" fill="#8a94a1">M3·5  agent wiring — default_tools() (one fresh world per agent) · catalogue pasted into the system prompt · run.py --no-tools</text>
-  <text x="40" y="834" font-size="11" fill="#8a94a1">M3·6  close-out — 86 green · PLAN.md flip · SVG final pass (M3 complete) · timeline.html 11 stages · journey.gif · doc-truth sweep</text>
-  <text x="40" y="858" font-size="11" fill="#8a94a1">asa · educational artifact — proto of the docs/ SVG series · hand-authored, zero deps · verified at git rev b7e05d2</text>
+  <text x="40" y="690" font-size="11" fill="#8a94a1">M2·1+3  memory.py + agent.py — ContextWindow (append · count · trim; system sacred) · full loop hop + max_steps guard</text>
+  <text x="40" y="706" font-size="11" fill="#8a94a1">M2·5+6  run.py — agent-driven CLI: gauges · answer/outcome kept apart · close-out: PLAN flip · slides · journey.gif</text>
+  <text x="40" y="722" font-size="11" fill="#8a94a1">M3·1  tool.py — the hand's shape: Tool(name · description · schema · func) · ToolCall · ToolResult · lab/tool_lab.py</text>
+  <text x="40" y="738" font-size="11" fill="#8a94a1">M3·2  registry.py — the phonebook + manual page: dup→ValueError · miss→None · sorted names · catalogue rendered FROM the schema</text>
+  <text x="40" y="754" font-size="11" fill="#8a94a1">M3·3  asa/tools/ — calculator (pure, hand parser, no eval, length+depth guards) · clock (read-only, optional utc) · lab/tools_lab.py</text>
+  <text x="40" y="770" font-size="11" fill="#8a94a1">M3·4  stateful pair — notes (numbered ledger ×2) + plan-board (stable ids ×3): world is data OUTSIDE the hands · lab/state_lab.py</text>
+  <text x="40" y="786" font-size="11" fill="#8a94a1">M3·5  agent wiring — default_tools() (one fresh world per agent) · catalogue pasted into the system prompt · run.py --no-tools</text>
+  <text x="40" y="802" font-size="11" fill="#8a94a1">M3·6  close-out — 86 green · PLAN.md flip · SVG final pass (M3 complete) · timeline.html 11 stages · journey.gif · doc-truth sweep</text>
+  <text x="40" y="818" font-size="11" fill="#8a94a1">M4    protocol_react.py — the letter-reader: Thought/Action/Input → ToolCall · safe args (ast.literal_eval, no eval) · gentle repair · seam-flip: real tools run</text>
+  <text x="40" y="834" font-size="11" fill="#8a94a1">M5    control — Final Answer terminates · max_steps becomes the authoritative budget guard · golden-trace replays pin the whole loop</text>
+  <text x="40" y="850" font-size="11" fill="#8a94a1">M6    trace.py — 14 JSONL event kinds {ts,iter,kind,payload} · loop instrumented (req/resp/protocol/tool/loop) · conftest isolation · seed of M12's player</text>
+  <text x="40" y="866" font-size="11" fill="#8a94a1">M7    OllamaBrain — lfm3:latest (1.7B) first REAL brain · think-pin falsified → True · exam: drift → gentle note → self-repair → 42 · bench pin 7.2 tok/s</text>
+  <text x="40" y="880" font-size="11" fill="#8a94a1">asa · educational artifact — proto of the docs/ SVG series · hand-authored, zero deps · verified at the M7 close-out</text>
 </svg>

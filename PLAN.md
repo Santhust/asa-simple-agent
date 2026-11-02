@@ -332,14 +332,49 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - [x] **M8.5** _Close-out_ — PLAN tick + stage notes; journey picture (no debt this time);
         full pytest; AGENTS count refresh. *(Done 2026-11-02: covered by M8.4.5 close-out —
         170 tests green, all ticked.)*
-- [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct
+- [x] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct
   *(The "two protocols" lesson made measurable: same agent core, same ToolCall box,
   two protocol adapters underneath. Textual ReAct (M4) vs native function calling (M9).)*
   **Sub-milestones (one concept each):**
-  - [ ] **M9.0** _Map + decisions_ (no code): Gemini function calling API shape
+  - [x] **M9.0** _Map + decisions_ (no code): Gemini function calling API shape
         (functionDeclarations + parameters schema in generateContent), ToolCall↔functionCall
         conversion contract, agent core stays protocol-agnostic (same complete() seam),
         offline fake-transport tests + live smoke skipping without key.
+        **Decisions pinned (2026-11-02):**
+        - endpoint: same `POST .../v1beta/models/{model}:generateContent`; native mode adds
+          a `tools: [{functionDeclarations: [...]}]` array and
+          `toolConfig: {functionCallingConfig: {mode: "AUTO"}}` to the payload.
+        - functionDeclarations are built FROM the registry's mini-schema by
+          `protocol_native.build_tools_payload()` — one declaration per tool:
+          `{name, description, parameters: {type:"object", properties:{...}, required:[...]}}`.
+          Our mini-schema (number/integer/string/boolean + required + help) maps 1:1 onto
+          JSON Schema here, exactly as tool.py:34 promised. No schema library needed.
+        - **Conversion contract**: `ToolCall(name, args)` ↔ Gemini `functionCall {name, args}`.
+          Args are already a dict, so the round-trip is mechanical — BUT native mode skips
+          our text parser entirely. That is the whole point: a native `functionCall` arrives
+          as JSON-typed values (numbers as numbers, bools as bools), so `parse_function_call()`
+          does no `literal_eval`, no `_parse_kwargs`, no repair. M4.2/M4.3 exist only because
+          text is lossy; native mode has no lossy hop to repair.
+        - **Agent core stays protocol-agnostic.** The loop calls `parse(reply)` today; in
+          native mode it calls `protocol_native.parse_function_call(completion)`. Which one
+          it calls is decided by the BRAIN, not the loop: we add two uniform hooks to the
+          `Brain` interface — `supports_native()` (bool) and `native_tools()` (list of
+          declarations). MockBrain/OllamaBrain → False/[] (they speak text only). The loop
+          becomes: `if brain.supports_native(): verdict = native_parse(...) else:
+          verdict = react_parse(...)`. Same `ReActParsed`-shaped verdict either way, so the
+          rest of the loop is untouched. This keeps the SEAM honest and test-visible.
+        - **GeminiBrain native mode is opt-in, never the default.** `complete(messages, tools=None)`:
+          `tools` is None → current text behaviour, byte-for-byte unchanged (M8 tests stay
+          green). `tools=[...]` → send the declarations + toolConfig, and the response may
+          carry a `functionCall` instead of text. Text fallback is automatic: if the model
+          returns prose with no functionCall, `parse_function_call` returns an error verdict
+          and the loop feeds it back as a gentle note — same failure-is-data philosophy.
+        - **Thinking policy is moot for native mode** (no text to parse), but thought parts
+          are still filtered at mapping time for consistency with M8.1's separate-channel
+          contract.
+        - stdlib `urllib` only; transport seam reused (fake HTTP in tests); live smoke
+          skips without GEMINI_API_KEY, exactly like M8.1.
+      - stage: M9.0 decisions pinned (functionDeclarations shape, ToolCall↔functionCall contract, brain-owned protocol selection, opt-in native mode, transport seam)
   - [ ] **M9.1** _protocol_native skeleton_ — native adapter: build_tools_payload()
         (functionDeclarations from registry schemas), parse_function_call()
         (Gemini functionCall → ToolCall), offline unit tests, no network.

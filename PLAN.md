@@ -408,15 +408,22 @@ Same stream feeds the narrated CLI and the HTML playground player.
       - stage: M11.7 Topic 7 observability/failure modes
       - stage: M11.8 close-out — docs/asa-docs.html complete, 7 topics, inline SVG + quizzes, 17 code pointers
 
-- [~] **M12** HTML playground (offline via pre-recorded traces)
+- [x] **M12** HTML playground (offline via pre-recorded traces)
   **Sub-milestones (one concept each):**
-  - [ ] **M12.1** _Playground shell_ — index.html structure + nav + CSS matching docs/timeline.html
-  - [ ] **M12.2** _Trace player core_ — load trace.jsonl, play/scrub events, context gutter + token gauge
-  - [ ] **M12.3** _Pre-recorded traces_ — ship happy-path + broken traces (run agent to generate trace.jsonl)
-  - [ ] **M12.4** _Animated architecture diagram_ — from docs/m1-diagram.svg, animated build
-  - [ ] **M12.5** _Breakage lab_ — broken trace demo + how to read failure taxonomy
-  - [ ] **M12.6** _Two-protocol comparison + model zoo + glossary + quiz_ — embed compare_protocols, brain zoo, self-check
-  - [ ] **M12.7** _Close-out_ — PLAN tick + stage notes; full pytest green (197); AGENTS count unchanged
+  - [x] **M12.1** _Playground shell_ — index.html structure + nav + CSS matching docs/timeline.html
+  - [x] **M12.2** _Trace player core_ — load trace.jsonl, play/scrub events, context gutter + token gauge
+  - [x] **M12.3** _Pre-recorded traces_ — ship happy-path + broken + budget-exhausted traces (run agent to generate trace.jsonl)
+  - [x] **M12.4** _Animated architecture diagram_ — from docs/m1-diagram.svg, animated build
+  - [x] **M12.5** _Breakage lab_ — broken trace demo + how to read failure taxonomy
+  - [x] **M12.6** _Two-protocol comparison + model zoo + glossary + quiz_ — embed compare_protocols, brain zoo, self-check
+  - [x] **M12.7** _Close-out_ — PLAN tick + stage notes; full pytest green (197); AGENTS count unchanged
+      - stage: M12.1 playground shell (index.html, nav, CSS)
+      - stage: M12.2 trace player core (load/scrub/play events, context gutter, token gauge)
+      - stage: M12.3 pre-recorded traces (happy-path, broken-drift, budget-exhausted)
+      - stage: M12.4 animated architecture diagram (Task→Brain→ToolCall→Tool→Observation→Final Answer)
+      - stage: M12.5 breakage lab (drift→repair, failure taxonomy, detective lab pointer)
+      - stage: M12.6 two-protocol comparison, model zoo, glossary, self-check quiz
+      - stage: M12.7 close-out — playground/index.html complete, 6 exhibits, 3 pre-recorded traces, 197 tests green
 
 - [ ] **M13** Live mode (serve.py SSE) + README quickstart + final walkthrough
 

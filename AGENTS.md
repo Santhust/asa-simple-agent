@@ -18,7 +18,8 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
 - `MockBrain`   : deterministic, no deps (tests, offline demo, golden traces)
 - `OllamaBrain` : local; **lfm3:latest** default (1.7B, Q4_K_M, 256K ctx; native tools+thinking;
                   Pi5 8GB; stdlib HTTP, no pip dep). *(Change of plan 2026-11-02: lfm3 replaces
-                  llama3.2:1b — user installed + tested it under Ollama, same localhost:11434.)*
+                  llama3.2:1b — user installed + tested it under Ollama, same localhost:11434.
+                  Bench pin 2026-11-02 on this Pi5: ~7.2 tok/s generation, thinking on.)*
 - `GeminiBrain` : Google free tier, Gemini 3.1 / 3.5 Flash Lite
                   (15 RPM / 250K TPM / 500 RPD) + Gemma 4 26B / 31B by name; key available
 - `GPT2Brain`   : INTENTIONAL FAILURE demo (base LM, not instruction-tuned)

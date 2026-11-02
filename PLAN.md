@@ -213,6 +213,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M7.1 OllamaBrain skeleton (chat payload, think:false, transport seam, fail-soft; live smoke ran)
   - stage: M7.2 --brain ollama wired; first narrated real run (proper ReAct letter, final_answer)
   - stage: M7.3 reality check: think=false falsified (empty content) -> amended to True; drift self-repaired on real run; trace-isolation bug fixed
+  - stage: M7.4 bench pinned: lfm3 7.2 tok/s on Pi5 (104s wall, 3 steps); mock scriptless = honest procedural fail
   - [x] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
         with a fake transport + live smoke test that SKIPS when Ollama isn't running.
         *(Built 2026-11-02: transport injectable, 8 offline tests + live smoke (RAN — Ollama
@@ -228,8 +229,11 @@ Same stream feeds the narrated CLI and the HTML playground player.
         `Action Input: "7*6"` → gentle note → SELF-REPAIR to `{"expression": "7*6"}` → tool →
         Final Answer: 42. Real letters frozen as offline regressions. Also exposed + fixed a
         latent conftest isolation bug (reset_session never cleared the trace FILE).)*
-  - [ ] **M7.4** _bench.py_ — same task through MockBrain vs OllamaBrain side-by-side; timing,
-        tokens, success; pin lfm3 throughput on this Pi5 (stage note).
+  - [x] **M7.4** _bench.py_ — same task through MockBrain vs OllamaBrain side-by-side; timing,
+        tokens, success; pin lfm3 throughput on this Pi5 (stage note). *(Built 2026-11-02:
+        ran live — mock ✗ max_steps (scriptless factory: procedural failure, honest),
+        ollama ✓ final_answer: 3 steps, 553 tokens, 104s wall, **7.2 tok/s pinned**.
+        "ok" = PROCEDURAL success only, never a truth claim. 6 offline tests.)*
   - [ ] **M7.5** _Close-out_ — PLAN tick + stage notes; journey-picture pass (also covers M6.5 debt);
         full `pytest -q`; refresh AGENTS.md test count (currently stale: says 86, actual 113+).
 - [ ] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; pin limits

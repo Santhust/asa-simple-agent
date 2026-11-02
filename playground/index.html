@@ -63,6 +63,34 @@
   .nav button:disabled { opacity: 0.4; cursor: default; }
   .nav .cur { font-size: 0.85rem; color: #5a6472; }
 
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+  .card { background: #fff; border: 1px solid #c9cfda; border-radius: 6px; padding: 0.75rem; }
+  .card h4 { margin: 0 0 0.4rem 0; font-size: 0.9rem; color: #1f2430; }
+  .card p { margin: 0; font-size: 0.85rem; color: #3c4456; }
+
+  .trace-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+  .trace-table th { text-align: left; padding: 0.4rem 0.6rem; background: #eef1f5; border-bottom: 1px solid #c9cfda; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #5a6472; }
+  .trace-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #e2e6eb; }
+  .trace-table tr:hover { background: #f4f6f8; }
+  .trace-table tr.selected { background: #dcefe0; font-weight: 700; }
+  .kind-badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.75rem; font-weight: 700; }
+  .kind-session { background:#e3f2fd; color:#1565c0; }
+  .kind-brain { background:#e8f5e9; color:#2e7d32; }
+  .kind-protocol { background:#fff3e0; color:#ef6c00; }
+  .kind-tool { background:#f3e5f5; color:#7b1fa2; }
+  .kind-loop { background:#eceff1; color:#455a64; }
+  .kind-agent { background:#fce4ec; color:#c2185b; }
+  .kind-error { background:#ffebee; color:#b71c1c; }
+
+  .event-detail { margin-top: 0.75rem; padding: 0.75rem 1rem; background: #fff; border: 1px solid #c9cfda; border-radius: 8px; white-space: pre-wrap; word-break: normal; font-size: 0.82rem; font-family: ui-monospace, monospace; }
+  .trace-gauge { margin-top: 0.75rem; }
+  .gauge-bar { height: 10px; background: #e2e6eb; border-radius: 5px; overflow: hidden; margin-bottom: 0.25rem; }
+  .gauge-fill { height: 100%; background: #2e7d4f; width: 0%; transition: width 0.3s; }
+  .gauge-text { font-size: 0.8rem; color: #5a6472; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; }
+  @media (max-width: 700px){ .two-col{ grid-template-columns: 1fr; } }
+
   footer { font-size: 0.8rem; color: #8f97aa; padding: 1rem 1.25rem; border-top: 1px solid #c9cfda; }
 </style>
 </head>
@@ -89,9 +117,41 @@
   <section class="play" id="play-1">
     <h2><span class="num">1</span><span class="title">Architecture diagram</span></h2>
     <p class="story">The core speaks only <code>ToolCall(name, args)</code>. Two protocol adapters feed it (ReAct text vs native function calling); the loop — memory, brain, protocol, tools, trace — is identical for every brain.</p>
-    <div class="illustration" id="diagram">
-      <div class="caption">(animated diagram rendered here)</div>
+    <div class="illustration">
+      <svg width="700" height="340" viewBox="0 0 700 340" font-family="system-ui, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+        <defs>
+          <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="#2e7d4f"/>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="700" height="340" fill="#fbfbf9"/>
+        <rect x="30" y="130" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="89" y="152" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Task</text>
+        <text x="89" y="169" font-size="10" fill="#3c4456" text-anchor="middle">"compute 7*6"</text>
+        <line x1="148" y1="162" x2="198" y2="162" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <rect x="198" y="110" width="118" height="104" rx="7" fill="#cfe3f5" stroke="#1f6fb2" stroke-width="1.75"/>
+        <text x="257" y="134" font-size="12" font-weight="700" fill="#123a5e" text-anchor="middle">Brain (model)</text>
+        <text x="257" y="152" font-size="10" fill="#3c4456" text-anchor="middle">reads transcript</text>
+        <text x="257" y="166" font-size="10" fill="#3c4456" text-anchor="middle">writes letter</text>
+        <line x1="316" y1="162" x2="366" y2="162" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <rect x="366" y="110" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="425" y="132" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">ToolCall</text>
+        <text x="425" y="149" font-size="10" fill="#3c4456" text-anchor="middle">calculator(expr)</text>
+        <line x1="257" y1="214" x2="257" y2="240" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <rect x="198" y="240" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="257" y="262" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Tool runs</text>
+        <text x="257" y="276" font-size="10" fill="#3c4456" text-anchor="middle">7*6 = 42</text>
+        <line x1="484" y1="162" x2="564" y2="162" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="484" y1="272" x2="564" y2="272" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr)"/>
+        <rect x="564" y="110" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="623" y="132" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Observation</text>
+        <text x="623" y="149" font-size="10" fill="#3c4456" text-anchor="middle">fed back to memory</text>
+        <rect x="564" y="240" width="118" height="64" rx="7" fill="#dcefe0" stroke="#2e7d4f" stroke-width="1.5"/>
+        <text x="623" y="262" font-size="12" font-weight="700" fill="#1f2430" text-anchor="middle">Final Answer</text>
+        <text x="623" y="276" font-size="10" fill="#3c4456" text-anchor="middle">ends the run</text>
+      </svg>
     </div>
+    <div class="caption">Task → Brain → ToolCall → Tool runs → Observation → Final Answer. The loop is protocol-agnostic.</div>
     <div class="in-repo">
       <h4>In this repo</h4>
       <ul>
@@ -102,12 +162,215 @@
     </div>
   </section>
 
-  <!-- Placeholders filled in M12.2–M12.6 -->
-  <section class="play" id="play-2" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">2</span><span class="title">Trace player</span></h2><p class="story">(M12.2 — coming next)</p></section>
-  <section class="play" id="play-3" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">3</span><span class="title">Breakage lab</span></h2><p class="story">(M12.3 — coming next)</p></section>
-  <section class="play" id="play-4" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">4</span><span class="title">Two-protocol comparison</span></h2><p class="story">(M12.4 — coming next)</p></section>
-  <section class="play" id="play-5" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">5</span><span class="title">Model zoo &amp; glossary</span></h2><p class="story">(M12.5 — coming next)</p></section>
-  <section class="play" id="play-6" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">6</span><span class="title">Self-check quiz</span></h2><p class="story">(M12.6 — coming next)</p></section>
+  <!-- ============ Play 2: Trace player ============ -->
+  <section class="play" id="play-2">
+    <h2><span class="num">2</span><span class="title">Trace player</span></h2>
+    <p class="story">Every internal step is one JSONL trace event <code>{ts, iter, kind, payload}</code>. Pick a trace, step through it event by event, or auto-play. The context gutter shows how memory grows each turn.</p>
+    <div class="controls">
+      <label>Trace:</label>
+      <select id="trace-select">
+        <option value="happy-path">happy-path — compute 2+2 (clean)</option>
+        <option value="broken-drift">broken-drift — drift → repair → success</option>
+        <option value="budget-exhausted">budget-exhausted — max_steps guard</option>
+      </select>
+      <button id="trace-prev">← prev</button>
+      <button id="trace-next">next →</button>
+      <button id="trace-play">▶ play</button>
+      <span class="label">step <span id="trace-step">0</span> / <span id="trace-total">0</span></span>
+    </div>
+    <div class="panel">
+      <h4>Selected event</h4>
+      <div id="trace-event-detail" class="event-detail">(select a step)</div>
+    </div>
+    <table class="trace-table" id="trace-table">
+      <thead><tr><th>iter</th><th>kind</th><th>payload summary</th></tr></thead>
+      <tbody id="trace-tbody"></tbody>
+    </table>
+    <div class="trace-gauge">
+      <div class="gauge-bar"><div class="gauge-fill" id="trace-gauge-fill"></div></div>
+      <div class="gauge-text" id="trace-gauge-text">memory: 0 tokens</div>
+    </div>
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>asa/trace.py</code> — write/read/clear JSONL events, run_id, 14 kinds</li>
+        <li>Pre-recorded traces generated by running the agent with scripted MockBrain</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Play 3: Breakage lab ============ -->
+  <section class="play" id="play-3">
+    <h2><span class="num">3</span><span class="title">Breakage lab</span></h2>
+    <p class="story">Failures are data, not crashes. When the model writes a broken letter (no <code>Action:</code>, no <code>Action Input:</code>), the parser returns a gentle note instead of an exception. The model reads the note, corrects its format, and retries — drift → observation → repair.</p>
+    <div class="panel">
+      <h4>Broken letter → gentle note → retry</h4>
+      <pre>Model: "This is not a letter at all."
+Parser: error — "Could not read this reply as ReAct. Expected lines like:
+  Thought: ...
+  Action: tool_name
+  Action Input: key=value ...
+Or use 'Final Answer: ...' to end."
+Loop: feeds that note back as an Observation
+Model (next turn): writes a correct Action: calculator / Action Input: ...</pre>
+    </div>
+    <div class="panel">
+      <h4>Failure taxonomy</h4>
+      <div class="grid">
+        <div class="card"><h4>empty_reply</h4><p>Model returned blank text → gentle note, retry</p></div>
+        <div class="card"><h4>protocol_drift</h4><p>Reply doesn't match ReAct grammar → gentle note, retry</p></div>
+        <div class="card"><h4>tool_error</h4><p>Tool rejected args or raised → ToolResult(is_error), fed back</p></div>
+        <div class="card"><h4>budget_exhausted</h4><p>max_steps reached without answer → terminate, report reason</p></div>
+        <div class="card"><h4>network</h4><p>Ollama/Gemini unreachable → recorded, not propagated as crash</p></div>
+        <div class="card"><h4>rate_limited</h4><p>HTTP 429 → gentle retry with Retry-After, then guidance</p></div>
+      </div>
+    </div>
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>asa/protocol_react.py</code> — gentle error verdicts (M4.3)</li>
+        <li><code>asa/brain.py</code> — brain failures recorded as trace events (M8.4.4)</li>
+        <li><code>lab/detective_lab.py</code> — groups by run_id, replays failing runs</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Play 4: Two-protocol comparison ============ -->
+  <section class="play" id="play-4">
+    <h2><span class="num">4</span><span class="title">Two-protocol comparison</span></h2>
+    <p class="story">Same agent core, same <code>ToolCall(name, args)</code> box, two protocol adapters underneath. ReAct (textual letters) vs native (API function calling). Measured side-by-side on the same task: drift, repair, steps, tokens, wall time.</p>
+    <div class="two-col">
+      <div class="panel">
+        <h4>ReAct (M4 — textual)</h4>
+        <ul style="margin:0; padding-left:1.1rem; font-size:0.9rem;">
+          <li>Model writes <code>Thought:/Action:/Action Input:</code> in prose</li>
+          <li>Parser uses regexes + <code>literal_eval</code> (no <code>eval</code>)</li>
+          <li>Drift → gentle note → self-repair (M4.3)</li>
+          <li>Real drift observed (M7.3) needing self-repair</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h4>Native (M9 — function calling)</h4>
+        <ul style="margin:0; padding-left:1.1rem; font-size:0.9rem;">
+          <li>API returns structured <code>functionCall {name, args}</code></li>
+          <li>Args already typed — numbers as numbers, bools as bools</li>
+          <li>No regex, no <code>literal_eval</code>, no repair</li>
+          <li>Zero drift, ~3.5× faster (live Gemini, M9.3)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="panel">
+      <h4>Live side-by-side result (Gemini, task "compute 7*6")</h4>
+      <table class="trace-table">
+        <thead><tr><th>protocol</th><th>steps</th><th>tokens</th><th>wall_s</th><th>drift</th><th>repair</th><th>final_answer</th></tr></thead>
+        <tbody>
+          <tr><td><strong>react</strong></td><td>3.5</td><td>536.5</td><td>3.13</td><td>1.5</td><td>1.5</td><td>2/2</td></tr>
+          <tr><td><strong>native</strong></td><td>1.0</td><td>468.0</td><td>0.881</td><td>0.0</td><td>0.0</td><td>2/2</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.85rem; color:#5a6472; margin-top:0.4rem;">Both reach final_answer (procedural success, not truth). Native skips the parse/repair hop entirely.</p>
+    </div>
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>asa/compare_protocols.py</code> — run_once/compare/narrate, trace-derived metrics (M9.3)</li>
+        <li><code>asa/protocol_react.py</code> · <code>asa/protocol_native.py</code> — the two adapters</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Play 5: Model zoo + glossary ============ -->
+  <section class="play" id="play-5">
+    <h2><span class="num">5</span><span class="title">Model zoo &amp; glossary</span></h2>
+    <p class="story">To the agent, any model is just a text-in/text-out box: <code>complete(messages) → Completion</code>. Swapping the brain never changes agent code — that swap <em>is</em> the lesson.</p>
+    <div class="grid">
+      <div class="card"><h4>MockBrain</h4><p>deterministic, scripted · tests · offline demo · golden traces</p></div>
+      <div class="card"><h4>OllamaBrain</h4><p>local · lfm3:latest (1.7B, Q4_K_M) · ~7.2 tok/s on Pi5 · thinking on · stdlib urllib</p></div>
+      <div class="card"><h4>GeminiBrain</h4><p>cloud · gemini-3.5-flash-lite · key in header only · thought parts filtered · native function calling</p></div>
+    </div>
+    <div class="panel">
+      <h4>Glossary</h4>
+      <div style="display:grid; grid-template-columns: 140px 1fr; gap: 0.5rem 1rem; font-size:0.9rem;">
+        <div><b>ToolCall</b></div><div>name + args — the only vocabulary the core speaks</div>
+        <div><b>ToolResult</b></div><div>output + is_error — failure is data, not an exception</div>
+        <div><b>ContextWindow</b></div><div>memory: append, token estimate, age-first trim, system sacred</div>
+        <div><b>Verdict</b></div><div>thought_action / final_answer / error — parser output</div>
+        <div><b>run_id</b></div><div>identity per agent run — separates evidence in the shared trace</div>
+        <div><b>Final Answer</b></div><div>third verdict — ends the loop when the model answers</div>
+        <div><b>max_steps</b></div><div>budget guard — terminates when steps are exhausted</div>
+        <div><b>Failure is data</b></div><div>errors become Observations the model can act on, never crashes</div>
+      </div>
+    </div>
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>asa/brain.py</code> — Brain base + MockBrain, OllamaBrain, GeminiBrain</li>
+        <li><code>run.py</code> — BRAINS = {"mock", "ollama", "gemini"}</li>
+        <li><code>bench.py</code> — same task across brains, procedural "ok" only</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Play 6: Self-check quiz ============ -->
+  <section class="play" id="play-6">
+    <h2><span class="num">6</span><span class="title">Self-check quiz</span></h2>
+    <p class="story">Test your understanding of the agent's internals. Click an answer — feedback appears inline.</p>
+    <div class="quiz">
+      <div class="q">
+        <p>What is the <em>only</em> vocabulary the agent core speaks?</p>
+        <div class="opts">
+          <button onclick="check(this, false)">JSON text</button>
+          <button onclick="check(this, true)">ToolCall(name, args)</button>
+          <button onclick="check(this, false)">SQL queries</button>
+        </div>
+        <div class="feedback" id="q1"></div>
+      </div>
+      <div class="q">
+        <p>When the model writes a broken letter, what happens?</p>
+        <div class="opts">
+          <button onclick="check(this, false)">The agent crashes</button>
+          <button onclick="check(this, true)">A gentle note is returned as an Observation</button>
+          <button onclick="check(this, false)">The loop exits immediately</button>
+        </div>
+        <div class="feedback" id="q2"></div>
+      </div>
+      <div class="q">
+        <p>What stops the loop?</p>
+        <div class="opts">
+          <button onclick="check(this, true)">Final Answer, max_steps, or a failure</button>
+          <button onclick="check(this, false)">The user presses Ctrl-C</button>
+          <button onclick="check(this, false)">The model runs out of memory</button>
+        </div>
+        <div class="feedback" id="q3"></div>
+      </div>
+      <div class="q">
+        <p>What is the advantage of native function calling over ReAct text?</p>
+        <div class="opts">
+          <button onclick="check(this, false)">Bigger parameter count</button>
+          <button onclick="check(this, true)">Args are already typed — no regex, no eval, no repair</button>
+          <button onclick="check(this, false)">It needs fewer tools</button>
+        </div>
+        <div class="feedback" id="q4"></div>
+      </div>
+      <div class="q">
+        <p>What stays identical when you swap brains?</p>
+        <div class="opts">
+          <button onclick="check(this, true)">The agent loop — only the brain changes</button>
+          <button onclick="check(this, false)">The model weights</button>
+          <button onclick="check(this, false)">The trace format</button>
+        </div>
+        <div class="feedback" id="q5"></div>
+      </div>
+    </div>
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>tests/test_protocol_react.py</code> — gentle notes, safe parsing, Final Answer</li>
+        <li><code>tests/test_compare_protocols.py</code> — side-by-side metrics (M9.3)</li>
+        <li><code>tests/test_trace.py</code> — 14 event kinds, run_id isolation</li>
+      </ul>
+    </div>
+  </section>
 
   <div class="nav">
     <button id="prev" type="button" disabled>← prev</button>
@@ -119,12 +382,121 @@
 <footer>asa — a simple agent (educational). Built sub-milestone by sub-milestone; see PLAN.md.</footer>
 
 <script>
+  const TRACE_HAPPY_PATH = [{"ts": 1793632365.9234023, "iter": 1, "kind": "session.start", "payload": {"task": "compute 2+2", "run_id": "run-36f74622"}, "run_id": "run-36f74622"}, {"ts": 1793632365.9237082, "iter": 2, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> compute 2+2"], "protocol": "react"}, "run_id": "run-36f74622"}, {"ts": 1793632365.9240415, "iter": 3, "kind": "brain.response", "payload": {"text": "Thought: I need to compute 2+2.\nAction: calculator\nAction Input: expression=\"2+2\"", "model": "mock-1"}, "run_id": "run-36f74622"}, {"ts": 1793632365.9242935, "iter": 4, "kind": "protocol.raw", "payload": {"raw": "Thought: I need to compute 2+2.\nAction: calculator\nAction Input: expression=\"2+2\""}, "run_id": "run-36f74622"}, {"ts": 1793632365.9269197, "iter": 5, "kind": "protocol.parsed", "payload": {"kind": "thought_action", "tool": "calculator", "args": {"expression": "2+2"}}, "run_id": "run-36f74622"}, {"ts": 1793632365.927355, "iter": 6, "kind": "tool.lookup", "payload": {"name": "calculator"}, "run_id": "run-36f74622"}, {"ts": 1793632365.9276354, "iter": 7, "kind": "tool.invoke", "payload": {"name": "calculator", "args": {"expression": "2+2"}}, "run_id": "run-36f74622"}, {"ts": 1793632365.927979, "iter": 8, "kind": "tool.result", "payload": {"name": "calculator", "output": "2+2 = 4", "error": false}, "run_id": "run-36f74622"}, {"ts": 1793632365.9282362, "iter": 9, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> compute 2+2", "<assistant> Thought: I need to compute 2+2.\nAction: calculator\nAction Input: expression=\"2+2\"", "<user> Observation: 2+2 = 4"], "protocol": "react"}, "run_id": "run-36f74622"}, {"ts": 1793632365.9284506, "iter": 10, "kind": "brain.response", "payload": {"text": "Thought: done.\nFinal Answer: 4", "model": "mock-1"}, "run_id": "run-36f74622"}, {"ts": 1793632365.929738, "iter": 11, "kind": "protocol.raw", "payload": {"raw": "Thought: done.\nFinal Answer: 4"}, "run_id": "run-36f74622"}, {"ts": 1793632365.930563, "iter": 12, "kind": "agent.answer", "payload": {"answer": "4", "steps": 2}, "run_id": "run-36f74622"}, {"ts": 1793632365.931253, "iter": 13, "kind": "loop.terminate", "payload": {"reason": "final_answer"}, "run_id": "run-36f74622"}];
+const TRACE_BROKEN_DRIFT = [{"ts": 1793632365.9328396, "iter": 1, "kind": "session.start", "payload": {"task": "compute 7*6", "run_id": "run-b0339778"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9332316, "iter": 2, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> compute 7*6"], "protocol": "react"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9338334, "iter": 3, "kind": "brain.response", "payload": {"text": "This is not a letter at all.", "model": "mock-1"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9343908, "iter": 4, "kind": "protocol.raw", "payload": {"raw": "This is not a letter at all."}, "run_id": "run-b0339778"}, {"ts": 1793632365.9349763, "iter": 5, "kind": "protocol.error", "payload": {"message": "Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end.", "failure": "protocol_drift"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9355512, "iter": 6, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> compute 7*6", "<assistant> This is not a letter at all.", "<user> Observation: Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end."], "protocol": "react"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9364219, "iter": 7, "kind": "brain.response", "payload": {"text": "Thought: ok now I will compute.\nAction: calculator\nAction Input: expression=\"7*6\"", "model": "mock-1"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9373047, "iter": 8, "kind": "protocol.raw", "payload": {"raw": "Thought: ok now I will compute.\nAction: calculator\nAction Input: expression=\"7*6\""}, "run_id": "run-b0339778"}, {"ts": 1793632365.938567, "iter": 9, "kind": "protocol.parsed", "payload": {"kind": "thought_action", "tool": "calculator", "args": {"expression": "7*6"}}, "run_id": "run-b0339778"}, {"ts": 1793632365.9398148, "iter": 10, "kind": "tool.lookup", "payload": {"name": "calculator"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9417944, "iter": 11, "kind": "tool.invoke", "payload": {"name": "calculator", "args": {"expression": "7*6"}}, "run_id": "run-b0339778"}, {"ts": 1793632365.9425967, "iter": 12, "kind": "tool.result", "payload": {"name": "calculator", "output": "7*6 = 42", "error": false}, "run_id": "run-b0339778"}, {"ts": 1793632365.9434345, "iter": 13, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> compute 7*6", "<assistant> This is not a letter at all.", "<user> Observation: Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end.", "<assistant> Thought: ok now I will compute.\nAction: calculator\nAction Input: expression=\"7*6\"", "<user> Observation: 7*6 = 42"], "protocol": "react"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9440594, "iter": 14, "kind": "brain.response", "payload": {"text": "Thought: done.\nFinal Answer: 42", "model": "mock-1"}, "run_id": "run-b0339778"}, {"ts": 1793632365.9446075, "iter": 15, "kind": "protocol.raw", "payload": {"raw": "Thought: done.\nFinal Answer: 42"}, "run_id": "run-b0339778"}, {"ts": 1793632365.945291, "iter": 16, "kind": "agent.answer", "payload": {"answer": "42", "steps": 3}, "run_id": "run-b0339778"}, {"ts": 1793632365.945989, "iter": 17, "kind": "loop.terminate", "payload": {"reason": "final_answer"}, "run_id": "run-b0339778"}];
+const TRACE_BUDGET_EXHAUSTED = [{"ts": 1793632365.9475026, "iter": 1, "kind": "session.start", "payload": {"task": "anything", "run_id": "run-f031bbb9"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9480894, "iter": 2, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> anything"], "protocol": "react"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9488711, "iter": 3, "kind": "brain.response", "payload": {"text": "just talking", "model": "mock-1"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.949563, "iter": 4, "kind": "protocol.raw", "payload": {"raw": "just talking"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9503894, "iter": 5, "kind": "protocol.error", "payload": {"message": "Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end.", "failure": "protocol_drift"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9513175, "iter": 6, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> anything", "<assistant> just talking", "<user> Observation: Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end."], "protocol": "react"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.952258, "iter": 7, "kind": "brain.response", "payload": {"text": "still talking", "model": "mock-1"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9527905, "iter": 8, "kind": "protocol.raw", "payload": {"raw": "still talking"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.953385, "iter": 9, "kind": "protocol.error", "payload": {"message": "Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end.", "failure": "protocol_drift"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9540188, "iter": 10, "kind": "brain.request", "payload": {"prompt": ["<system> You are 'asa', a teaching agent built from scratch.\n\n## Available tools\n\n### board_add\nAdd one item to a shared plan board; it lands in 'todo'.\nParams:\n- item (string, required): what to plan, e.g. 'draft the M6 trace schema'\n\n### board_list\nRead the shared plan board (all columns, or one).\nParams:\n- status (string, optional): restrict the view to todo, doing, done; default 'all'\n\n### board_move\nMove a planned item between columns, by its stable id.\nParams:\n- item_id (integer, required): the id printed when the item was added\n- status (string, required): the destination column: todo, doing, or done\n\n### calculator\nEvaluate an arithmetic expression with + - * /, parentheses and decimals, e.g. '2*(3+4)'.\nParams:\n- expression (string, required): the arithmetic to do, e.g. '2*(3+4)' or '7/2'\n\n### clock\nRead the current time, formatted 'YYYY-MM-DD HH:MM:SS (local)' or '... (UTC)'.\nParams:\n- utc (boolean, optional): pass true for UTC; the default is your machine's local time\n\n### notes_read\nRead every note in the ledger, numbered.\n\n### notes_write\nAppend one note to a private numbered ledger.\nParams:\n- text (string, required): the note to record, e.g. 'idea: cache summaries'\n\n\n## How to call tools (ReAct)\nWhen you need to use a tool, write EXACTLY this form:\nThought: <why you are doing this>\nAction: <tool name from the list above>\nAction Input: <key=value pairs, or a JSON object>. Use the parameter names shown.\n\nTo answer directly (no tool), write:\nThought: <brief reasoning>\nFinal Answer: <your answer>\n\nIf a message comes back starting with \"Observation:\", read it and continue.\nIf you see a gentle note about fixing your letter, correct the format and try again.\n", "<user> anything", "<assistant> just talking", "<user> Observation: Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end.", "<assistant> still talking", "<user> Observation: Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end."], "protocol": "react"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9545038, "iter": 11, "kind": "brain.response", "payload": {"text": "never answering", "model": "mock-1"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.954955, "iter": 12, "kind": "protocol.raw", "payload": {"raw": "never answering"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9552824, "iter": 13, "kind": "protocol.error", "payload": {"message": "Could not read this reply as ReAct. Expected lines like:\nThought: ...\nAction: tool_name\nAction Input: key=value  (or as shown in the instructions)\nOr use 'Final Answer: ...' to end.", "failure": "protocol_drift"}, "run_id": "run-f031bbb9"}, {"ts": 1793632365.9556181, "iter": 14, "kind": "loop.terminate", "payload": {"reason": "max_steps", "failure": "budget_exhausted"}, "run_id": "run-f031bbb9"}];
+
+
+  /* ---- exhibit nav ---- */
   const plays = ["play-1","play-2","play-3","play-4","play-5","play-6"];
   let idx = 0;
   function show(i){ plays.forEach((t,k)=>{document.getElementById(t).style.display = (k===i)?"block":"none";}); document.getElementById("prev").disabled = i===0; document.getElementById("next").disabled = i===plays.length-1; document.querySelector(".cur").textContent = "exhibit "+(i+1)+" / "+plays.length; document.querySelectorAll("nav.toc a").forEach((a,k)=>{a.className = (k===i)?"current":"";}); }
   document.getElementById("prev").onclick = ()=>{ idx = Math.max(0, idx-1); show(idx); };
   document.getElementById("next").onclick = ()=>{ idx = Math.min(plays.length-1, idx+1); show(idx); };
   show(0);
+
+  /* ---- self-check quizzes ---- */
+  function check(btn, correct){
+    const q = btn.closest(".q");
+    const fb = q.querySelector(".feedback");
+    fb.style.display = "block";
+    if(correct){ fb.textContent = "Correct. "; fb.className = "feedback ok"; }
+    else { fb.textContent = "Not quite. Try again."; fb.className = "feedback bad"; }
+    Array.from(q.querySelectorAll("button")).forEach(b=>{ b.disabled = true; if(b===btn){ b.style.background = correct ? "#dcefe0" : "#f6e7e5"; } });
+  }
+
+  /* ---- trace player ---- */
+  const traceData = { happy-path: TRACE_HAPPY_PATH, broken-drift: TRACE_BROKEN_DRIFT, budget-exhausted: TRACE_BUDGET_EXHAUSTED };
+  let traceEvents = [];
+  let traceIdx = 0;
+  let traceTimer = null;
+  const sel = document.getElementById("trace-select");
+  const tbody = document.getElementById("trace-tbody");
+  const detail = document.getElementById("trace-event-detail");
+  const stepEl = document.getElementById("trace-step");
+  const totalEl = document.getElementById("trace-total");
+  const fill = document.getElementById("trace-gauge-fill");
+  const gaugeText = document.getElementById("trace-gauge-text");
+
+  const kindClass = k => {
+    if (k.startsWith("session")) return "kind-session";
+    if (k.startsWith("brain")) return "kind-brain";
+    if (k.startsWith("protocol")) return "kind-protocol";
+    if (k.startsWith("tool")) return "kind-tool";
+    if (k.startsWith("loop")) return "kind-loop";
+    if (k.startsWith("agent")) return "kind-agent";
+    if (k === "error") return "kind-error";
+    return "";
+  };
+
+  function loadTrace(name){
+    if (traceTimer) { clearInterval(traceTimer); traceTimer = null; document.getElementById("trace-play").textContent = "▶ play"; }
+    traceEvents = traceData[name] || [];
+    traceIdx = 0;
+    renderList();
+    renderEvent(0);
+  }
+
+  function renderList(){
+    tbody.innerHTML = "";
+    traceEvents.forEach((e, i) => {
+      const tr = document.createElement("tr");
+      tr.className = i === traceIdx ? "selected" : "";
+      tr.onclick = () => { traceIdx = i; renderList(); renderEvent(i); };
+      const p = e.payload || {};
+      let summary = "";
+      if (e.kind === "session.start") summary = `task: ${p.task || ""}`;
+      else if (e.kind === "brain.response") summary = `text: ${JSON.stringify(String(p.text || "").slice(0,40))}`;
+      else if (e.kind === "protocol.parsed") summary = `kind: ${p.kind} ${p.tool ? "tool="+p.tool : ""} ${p.args ? "args="+JSON.stringify(p.args) : ""}`;
+      else if (e.kind === "protocol.error") summary = `error: ${String(p.error||"")}`;
+      else if (e.kind === "tool.invoke") summary = `${p.name}(${JSON.stringify(p.args||{})})`;
+      else if (e.kind === "tool.result") summary = `${p.name} err=${p.error} out=${String(p.output||"").slice(0,30)}`;
+      else if (e.kind === "agent.answer") summary = `answer: ${p.answer}`;
+      else if (e.kind === "loop.terminate") summary = `reason: ${p.reason}`;
+      tr.innerHTML = `<td>${e.iter}</td><td><span class="kind-badge ${kindClass(e.kind)}">${e.kind}</span></td><td>${summary}</td>`;
+      tbody.appendChild(tr);
+    });
+    totalEl.textContent = traceEvents.length;
+  }
+
+  function renderEvent(i){
+    if (i < 0 || i >= traceEvents.length) return;
+    const e = traceEvents[i];
+    traceIdx = i;
+    stepEl.textContent = i + 1;
+    renderList();
+    const rows = [];
+    rows.push(`iter: ${e.iter}`);
+    rows.push(`kind: ${e.kind}`);
+    rows.push(`run_id: ${e.run_id || "-"}`);
+    rows.push(`ts: ${new Date(e.ts*1000).toISOString()}`);
+    rows.push("");
+    rows.push(JSON.stringify(e.payload, null, 2));
+    detail.textContent = rows.join("
+");
+    // gauge: estimate tokens as iter-based proxy
+    const pct = Math.round((i + 1) / Math.max(traceEvents.length,1) * 100);
+    fill.style.width = pct + "%";
+    gaugeText.textContent = `step ${i+1} / ${traceEvents.length}`;
+    // scroll row into view
+    const tr = tbody.children[i];
+    if (tr) tr.scrollIntoView({block:"nearest"});
+  }
+
+  document.getElementById("trace-select").onchange = (ev)=>loadTrace(ev.target.value);
+  document.getElementById("trace-prev").onclick = ()=>{ if(traceTimer)clearInterval(traceTimer); document.getElementById("trace-play").textContent="▶ play"; traceIdx = Math.max(0, traceIdx-1); renderEvent(traceIdx); };
+  document.getElementById("trace-next").onclick = ()=>{ if(traceTimer)clearInterval(traceTimer); document.getElementById("trace-play").textContent="▶ play"; traceIdx = Math.min(traceEvents.length-1, traceIdx+1); renderEvent(traceIdx); };
+  document.getElementById("trace-play").onclick = ()=>{
+    const btn = document.getElementById("trace-play");
+    if (traceTimer) { clearInterval(traceTimer); traceTimer = null; btn.textContent = "▶ play"; return; }
+    btn.textContent = "⏸ pause";
+    traceTimer = setInterval(()=>{
+      if (traceIdx >= traceEvents.length-1) { clearInterval(traceTimer); traceTimer = null; btn.textContent = "▶ play"; return; }
+      traceIdx++; renderEvent(traceIdx);
+    }, 700);
+  };
+
+  loadTrace("happy-path");
 </script>
 </body>
 </html>

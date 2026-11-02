@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>asa — playground</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #fbfbf9; color: #1f2430; line-height: 1.5; }
+  header { background: #1f2430; color: #dce0ea; padding: 1rem 1.25rem; }
+  header h1 { margin: 0 0 0.25rem 0; font-size: 1.5rem; letter-spacing: 0.02em; }
+  header p { margin: 0; font-size: 0.95rem; color: #8f97aa; }
+  .deck { max-width: 1060px; margin: 0 auto; padding: 1rem 1.25rem 2rem; }
+  nav.toc { border-bottom: 1px solid #c9cfda; margin-bottom: 1.5rem; padding-bottom: 0.75rem; }
+  nav.toc h2 { margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5a6472; }
+  nav.toc ol { margin: 0; padding: 0; list-style: none; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  nav.toc li { margin: 0; }
+  nav.toc a { text-decoration: none; color: #3d5f80; font-size: 0.9rem; padding: 0.2rem 0.5rem; border: 1px solid #c9cfda; border-radius: 4px; }
+  nav.toc a:hover { background: #eef1f5; }
+  nav.toc a.current { background: #dcefe0; border-color: #2e7d4f; color: #1f6fb2; font-weight: 700; }
+
+  section.play { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e6eb; }
+  section.play:last-child { border-bottom: none; }
+  .play h2 { margin: 0 0 0.5rem 0; font-size: 1.35rem; display: flex; align-items: baseline; gap: 0.5rem; }
+  .play h2 .num { color: #2e7d4f; font-weight: 800; }
+  .play h2 .title { color: #1f2430; }
+  .play p.story { font-size: 1.05rem; color: #3c4456; max-width: 880px; margin: 0 0 1rem 0; }
+
+  .illustration { margin: 1rem 0; }
+  .illustration svg { display: block; margin: 0 auto; background: #fff; border: 1px solid #c9cfda; border-radius: 8px; }
+  .caption { text-align: center; font-size: 0.85rem; color: #5a6472; margin-top: 0.4rem; max-width: 880px; margin-left: auto; margin-right: auto; }
+
+  .panel { margin-top: 1rem; padding: 0.75rem 1rem; background: #fff; border: 1px solid #c9cfda; border-radius: 8px; }
+  .panel h4 { margin: 0 0 0.4rem 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #5a6472; }
+  .panel pre { margin: 0; overflow-x: auto; font-size: 0.82rem; color: #1f2430; background: #f4f6f8; padding: 0.6rem 0.9rem; border-radius: 4px; white-space: pre-wrap; word-break: normal; }
+
+  .controls { margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .controls button { text-decoration: none; padding: 0.35rem 0.9rem; border: 1px solid #8f97aa; border-radius: 6px; background: #fff; color: #1f2430; cursor: pointer; font: inherit; font-size: 0.9rem; }
+  .controls button:hover:not(:disabled) { background: #dce0ea; }
+  .controls button:disabled { opacity: 0.4; cursor: default; }
+  .controls button.active { background: #dcefe0; border-color: #2e7d4f; color: #1f6fb2; font-weight: 700; }
+  .controls label { font-size: 0.8rem; color: #5a6472; }
+
+  .in-repo { margin-top: 1rem; padding: 0.75rem 1rem; background: #eef1f5; border-left: 4px solid #3d5f80; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+  .in-repo h4 { margin: 0 0 0.4rem 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #3d5f80; }
+  .in-repo ul { margin: 0; padding-left: 1.1rem; color: #3c4456; }
+  .in-repo li { margin-bottom: 0.2rem; }
+  .in-repo code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; color: #1f6fb2; }
+
+  .quiz h4 { margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #5a6472; }
+  .q { margin-bottom: 0.75rem; padding: 0.6rem 0.9rem; background: #fff; border: 1px solid #c9cfda; border-radius: 6px; }
+  .q p { margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #1f2430; }
+  .opts { display: flex; flex-direction: column; gap: 0.3rem; }
+  .opts button { text-align: left; padding: 0.35rem 0.7rem; border: 1px solid #c9cfda; border-radius: 4px; background: #fff; cursor: pointer; font: inherit; font-size: 0.9rem; color: #3c4456; }
+  .opts button:hover { border-color: #3d5f80; background: #eef1f5; }
+  .feedback { margin-top: 0.4rem; font-size: 0.88rem; display: none; }
+  .feedback.ok { color: #2e7d4f; font-weight: 700; }
+  .feedback.bad { color: #b4552d; font-weight: 700; }
+
+  .nav { display: flex; justify-content: space-between; padding: 1.2rem 0 1rem; border-top: 1px solid #c9cfda; margin-top: 1rem; }
+  .nav button { text-decoration: none; padding: 0.4rem 1rem; border: 1px solid #8f97aa; border-radius: 6px; background: #fff; color: #1f2430; cursor: pointer; font: inherit; font-size: 0.9rem; }
+  .nav button:hover:not(:disabled) { background: #dce0ea; }
+  .nav button:disabled { opacity: 0.4; cursor: default; }
+  .nav .cur { font-size: 0.85rem; color: #5a6472; }
+
+  footer { font-size: 0.8rem; color: #8f97aa; padding: 1rem 1.25rem; border-top: 1px solid #c9cfda; }
+</style>
+</head>
+<body>
+<header>
+  <h1>asa — playground</h1>
+  <p>Interactive exhibits for the agent: trace player, breakage lab, two-protocol comparison, model zoo, glossary, quiz.</p>
+</header>
+
+<div class="deck">
+  <nav class="toc">
+    <h2>Exhibits</h2>
+    <ol>
+      <li><a href="#play-1" onclick="show(0)" class="current">1 · Architecture diagram</a></li>
+      <li><a href="#play-2" onclick="show(1)">2 · Trace player</a></li>
+      <li><a href="#play-3" onclick="show(2)">3 · Breakage lab</a></li>
+      <li><a href="#play-4" onclick="show(3)">4 · Two-protocol comparison</a></li>
+      <li><a href="#play-5" onclick="show(4)">5 · Model zoo &amp; glossary</a></li>
+      <li><a href="#play-6" onclick="show(5)">6 · Self-check quiz</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ Play 1: Architecture diagram ============ -->
+  <section class="play" id="play-1">
+    <h2><span class="num">1</span><span class="title">Architecture diagram</span></h2>
+    <p class="story">The core speaks only <code>ToolCall(name, args)</code>. Two protocol adapters feed it (ReAct text vs native function calling); the loop — memory, brain, protocol, tools, trace — is identical for every brain.</p>
+    <div class="illustration" id="diagram">
+      <div class="caption">(animated diagram rendered here)</div>
+    </div>
+    <div class="in-repo">
+      <h4>In this repo</h4>
+      <ul>
+        <li><code>asa/agent.py</code> — the loop seam</li>
+        <li><code>asa/protocol_react.py</code> · <code>asa/protocol_native.py</code> — the two adapters</li>
+        <li><code>asa/tool.py</code> · <code>asa/registry.py</code> — ToolCall vocabulary</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Placeholders filled in M12.2–M12.6 -->
+  <section class="play" id="play-2" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">2</span><span class="title">Trace player</span></h2><p class="story">(M12.2 — coming next)</p></section>
+  <section class="play" id="play-3" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">3</span><span class="title">Breakage lab</span></h2><p class="story">(M12.3 — coming next)</p></section>
+  <section class="play" id="play-4" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">4</span><span class="title">Two-protocol comparison</span></h2><p class="story">(M12.4 — coming next)</p></section>
+  <section class="play" id="play-5" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">5</span><span class="title">Model zoo &amp; glossary</span></h2><p class="story">(M12.5 — coming next)</p></section>
+  <section class="play" id="play-6" style="border-top:1px dashed #c9cfda;padding-top:1.5rem;"><h2><span class="num">6</span><span class="title">Self-check quiz</span></h2><p class="story">(M12.6 — coming next)</p></section>
+
+  <div class="nav">
+    <button id="prev" type="button" disabled>← prev</button>
+    <span class="cur">exhibit 1 / 6</span>
+    <button id="next" type="button">next →</button>
+  </div>
+</div>
+
+<footer>asa — a simple agent (educational). Built sub-milestone by sub-milestone; see PLAN.md.</footer>
+
+<script>
+  const plays = ["play-1","play-2","play-3","play-4","play-5","play-6"];
+  let idx = 0;
+  function show(i){ plays.forEach((t,k)=>{document.getElementById(t).style.display = (k===i)?"block":"none";}); document.getElementById("prev").disabled = i===0; document.getElementById("next").disabled = i===plays.length-1; document.querySelector(".cur").textContent = "exhibit "+(i+1)+" / "+plays.length; document.querySelectorAll("nav.toc a").forEach((a,k)=>{a.className = (k===i)?"current":"";}); }
+  document.getElementById("prev").onclick = ()=>{ idx = Math.max(0, idx-1); show(idx); };
+  document.getElementById("next").onclick = ()=>{ idx = Math.min(plays.length-1, idx+1); show(idx); };
+  show(0);
+</script>
+</body>
+</html>

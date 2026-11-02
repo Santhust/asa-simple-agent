@@ -90,4 +90,4 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
   (real since M7.4 — same task across brains, side by side; ok = PROCEDURAL
   success, never a truth claim; tok/s from Ollama's own counters when present)
 - `python serve.py`                        (planned M13 — live SSE mode for the playground)
-- `python -m pytest`                       (132 tests; run after every sub-milestone)
+- `python -m pytest`                       (170 tests; run after every sub-milestone)

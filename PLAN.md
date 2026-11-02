@@ -242,7 +242,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
         skipped the picture pass), documented in the row header; roadmap M4–M7 solid; brain-zoo +
         inventory panels updated; 1 new frame m7-stage-00.png → 12 slides in timeline.html (5KB)
         → journey.gif 12 frames. Truth-sweep side quest: m4 close's skipped pass acknowledged.)*
-- [ ] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; pin limits
+- [x] **M8** GeminiBrain (text protocol): free-key run; 429/rate-limit handling; Detective Kit; pin limits
   *(Scope refined 2026-11-02: M8 also carries the **Detective Kit** — cloud brains bring the
   failure modes (rate limits, remote silence, hallucinated tool names) that give forensics
   real exercise. Story: the M6 recorder proved itself as a debugging tool during M7's think-pin
@@ -278,6 +278,9 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M8.3 rate-limit fail-soft: 429 retries once (Retry-After honored), then guidance; 403 immediate; fake-transport tests green
   - stage: M8.4.1 run_id + session.start: every Event carries run_id; session.start written by agent.run(); 4 new tests
   - stage: M8.4.2 failure taxonomy: protocol.error → empty_reply/protocol_drift; tool.result → tool_error; loop.terminate max_steps → budget_exhausted; 4 new tests
+  - stage: M8.4.3 detective_lab.py: groups by run_id; finds failing runs; extracts failure contexts; render→native conversion; replay + think bisect; 11 tests
+  - stage: M8.4.4 brain exceptions recorded as trace events: network/rate_limited instead of crashes; 3 new tests
+  - stage: M8.4.5 close-out: 170 tests green
   - [x] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
         tests with fake transport; live smoke skips when no key/network. *(Built + live-probed
         2026-11-02: 9 offline tests + live smoke RAN (key present — first real Gemini words);
@@ -313,13 +316,17 @@ Same stream feeds the narrated CLI and the HTML playground player.
         (empty_reply · protocol_drift · tool_error · network · budget_exhausted ·
         rate_limited). *(Built 2026-11-02: protocol.error → empty_reply/protocol_drift;
         tool.result → tool_error; loop.terminate max_steps → budget_exhausted; 4 new tests.)*
-  - [ ] **M8.4.3** _lab/detective_lab.py_ — reads a trace, extracts failing
-        brain.request contexts, converts render()→native, replays against the brain
-        (one-variable bisect), offline-first.
-  - [ ] **M8.4.4** _Catch brain exceptions in agent.run()_ — network/rate_limited
+  - [x] **M8.4.3** _lab/detective_lab.py_ — reads a trace, extracts failing
+        brain.request contexts, converts render()→native, replays against the
+        brain (one-variable bisect), offline-first. *(Built 2026-11-02: 11
+        tests, all offline.)*
+  - [x] **M8.4.4** _Catch brain exceptions in agent.run()_ — network/rate_limited
         failures recorded as trace events instead of propagating out, so the trace
-        is complete for every run.
-  - [ ] **M8.4.5** _Close-out_ — PLAN tick + stage notes; full pytest.
+        is complete for every run. *(Built 2026-11-02: brain.complete wrapped in
+        try/except; OllamaUnavailable → network, GeminiUnavailable 429 → rate_limited,
+        other HTTP errors immediate; 3 new tests.)*
+  - [x] **M8.4.5** _Close-out_ — PLAN tick + stage notes; full pytest. *(Done 2026-11-02: 170 tests green incl. Detective Kit
+        offline tests + live smoke.)*
   - [ ] **M8.5** _Close-out_ — PLAN tick + stage notes; journey picture (no debt this time);
         full pytest; AGENTS count refresh.
 - [ ] **M9** protocol_native: Gemini function calling; side-by-side same task vs ReAct

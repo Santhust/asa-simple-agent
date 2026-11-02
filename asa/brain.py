@@ -13,7 +13,7 @@ import os
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .tokens import estimate_tokens
 
@@ -37,18 +37,40 @@ class Message:
 
 @dataclass
 class Completion:
-    """The brain's answer: the generated text plus a bit of bookkeeping."""
+    """The brain's answer: the generated text plus a bit of bookkeeping.
+
+    `tool_calls` is the native-protocol channel (M9): when the brain speaks
+    function calling, the structured functionCall(s) ride here instead of
+    being parsed out of `text`. Text brains leave it empty — protocol_native
+    reads it, protocol_react never touches it. Adding it as a defaulted
+    field keeps every existing Completion construction byte-identical.
+    """
 
     text: str
     model: str
     prompt_tokens: int = 0   # input tokens we sent (estimated)
     completion_tokens: int = 0  # output tokens it generated (estimated)
+    tool_calls: list[dict] = field(default_factory=list)
 
 
 class Brain:
     """Base class: a text-in / text-out box. Subclass and implement complete()."""
 
     name = "brain"
+
+    # ---- protocol selection (M9) --------------------------------------------
+    # Which protocol does this brain speak? The LOOP asks the brain, not the
+    # other way round: the SEAM stays brain-owned, so swapping brains swaps
+    # protocols with no agent-code change. Defaults are text-only — MockBrain
+    # and OllamaBrain inherit them untouched, and their existing tests stay
+    # byte-identical. Only GeminiBrain overrides.
+    def supports_native(self) -> bool:
+        """Does this brain speak API function calling instead of ReAct text?"""
+        return False
+
+    def native_tools(self) -> list[dict]:
+        """Function declarations to offer the model (empty for text brains)."""
+        return []
 
     def complete(self, messages: list[Message], **params) -> Completion:
         raise NotImplementedError(f"{type(self).__name__} must implement complete()")
@@ -296,7 +318,7 @@ class GeminiBrain(Brain):
                  api_key: str | None = None, api_key_env: str = "GEMINI_API_KEY",
                  thinking: bool = False, max_output_tokens: int = 512,
                  timeout: float = 120.0, retries: int = 1, retry_wait: float = 1.0,
-                 transport=None):
+                 transport=None, native: bool = False):
         self.model = model
         self.host = host.rstrip("/")
         self._api_key = api_key
@@ -310,6 +332,15 @@ class GeminiBrain(Brain):
         self.call_count = 0   # transport calls: bench parity with the other brains
         self.total_output_tokens = 0  # REAL counts from usageMetadata, aggregated
         self.last_payload: dict | None = None  # for inspection: NEVER holds the key
+        self.native = native   # M9: opt-in function calling (default OFF, see below)
+
+    # -- protocol selection (M9) ---------------------------------------------
+    # Gemini is the zoo's ONLY native speaker so far. native=False (the
+    # default) keeps M8's text behaviour byte-for-byte identical — every
+    # existing M8 test stays green — while native=True flips the function
+    # calling channel on. The brain owns the protocol; the loop only asks.
+    def supports_native(self) -> bool:
+        return self.native
 
     # -- the seam the tests swap ---------------------------------------------
     def _default_transport(self, url: str, payload: dict, timeout: float) -> tuple:
@@ -334,10 +365,10 @@ class GeminiBrain(Brain):
             f"no API key found (looked for env var {self._api_key_env!r}) — export "
             f"GEMINI_API_KEY before starting the session, or pass api_key=; "
             f"credential rules M8.0: never hardcode, never commit")
-
-    # -- request shaping: our Message -> Gemini generateContent ---------------
+# -- request shaping: our Message -> Gemini generateContent ---------------
     def _build_payload(self, messages: list[Message], thinking: bool,
-                       max_output_tokens: int) -> dict:
+                       max_output_tokens: int,
+                       tools: dict | None = None) -> dict:
         system_parts: list[str] = []
         contents = []
         for m in messages:
@@ -359,19 +390,28 @@ class GeminiBrain(Brain):
         payload: dict = {"contents": contents, "generationConfig": generation_config}
         if system_parts:
             payload["systemInstruction"] = {"parts": [{"text": "\n\n".join(system_parts)}]}
+        # M9: native function calling. `tools` is None -> the model is offered
+        # NOTHING and speaks prose (the M8 text path, byte-identical). When a
+        # fragment from build_tools_payload() is passed, it is merged in:
+        # tools:[{functionDeclarations:[...]}] + toolConfig:{AUTO}. The model
+        # may then return a structured functionCall instead of a letter.
+        if tools:
+            payload.update(tools)
         return payload
 
     def complete(self, messages: list[Message], **params) -> Completion:
         """Ask Gemini generateContent and map the reply into a Completion."""
-        allowed = ("model", "thinking", "max_output_tokens")
+        allowed = ("model", "thinking", "max_output_tokens", "tools")
         unknown = set(params) - set(allowed)
         if unknown:
             raise ValueError(
                 f"unknown param(s) {sorted(unknown)} — allowed: {list(allowed)}")
+        tools = params.get("tools")
         payload = self._build_payload(
             messages,
             thinking=params.get("thinking", self.thinking),
             max_output_tokens=params.get("max_output_tokens", self.max_output_tokens),
+            tools=tools,
         )
         model = params.get("model", self.model)
         url = f"{self.host}/v1beta/models/{model}:generateContent"
@@ -402,7 +442,9 @@ class GeminiBrain(Brain):
                     time.sleep(self.retry_wait)
                 continue
             self._note_usage(body)
-            return self._to_completion(body, messages)
+            completion = self._to_completion(body, messages)
+            self._last_tool_calls = completion.tool_calls  # what the model offered
+            return completion
         raise GeminiUnavailable(
             f"could not reach Google's API at {self.host} after {attempts} attempt(s) "
             f"({last_err!r}) — check the network") from last_err
@@ -410,10 +452,24 @@ class GeminiBrain(Brain):
     # -- response mapping: Gemini JSON -> Completion --------------------------
     @staticmethod
     def _to_completion(body: dict, messages: list[Message]) -> Completion:
-        parts = (((body.get("candidates") or [{}])[0]).get("content") or {}).get("parts") or []
+        candidate = (body.get("candidates") or [{}])[0]
+        content = candidate.get("content") or {}
+        parts = content.get("parts") or []
         # Thought parts (present only when thinking is enabled) never enter the
         # letter we parse — same separate-channel contract as Ollama's thinking.
         text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+        # M9: native function calls ride on the SAME part list, in a sibling
+        # field of the text part. The model returns EITHER prose OR a
+        # functionCall — never both in one turn — so nothing is lost.
+        tool_calls: list[dict] = []
+        for p in parts:
+            if isinstance(p, dict) and p.get("functionCall"):
+                fc = p["functionCall"]
+                if isinstance(fc, dict) and fc.get("name"):
+                    tool_calls.append({
+                        "name": fc.get("name"),
+                        "args": fc.get("args") or {},
+                    })
         usage = body.get("usageMetadata") or {}
         return Completion(
             text=text,
@@ -423,6 +479,7 @@ class GeminiBrain(Brain):
             prompt_tokens=usage.get("promptTokenCount")
             or sum(estimate_tokens(m.content) for m in messages),
             completion_tokens=usage.get("candidatesTokenCount") or estimate_tokens(text),
+            tool_calls=tool_calls,
         )
 
     def _note_usage(self, body: dict) -> None:

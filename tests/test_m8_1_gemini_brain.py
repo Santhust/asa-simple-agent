@@ -32,7 +32,17 @@ import pytest
 import urllib.error
 
 from asa.brain import GeminiBrain, GeminiUnavailable, Message
+from asa.protocol_native import build_tools_payload
+from asa.registry import ToolRegistry
+from asa.tool import Tool
 from asa.tokens import estimate_tokens
+
+
+def _registry_with(*tools: Tool) -> ToolRegistry:
+    r = ToolRegistry()
+    for t in tools:
+        r.register(t)
+    return r
 
 
 SECRET = "AIzaThisIsATestKeyForRedactionChecks"  # fake — exercises redaction only
@@ -245,3 +255,70 @@ def test_live_gemini_first_words():
     assert completion.text.strip(), "live model returned empty text"
     assert "gemini" in completion.model.lower()
     assert completion.prompt_tokens > 0   # Google reports REAL counts
+
+
+# -- M9: native function calling (opt-in, key-less offline tests) --------------
+
+def test_native_defaults_off_text_mode_unchanged():
+    """native=False (the default) sends no tools and produces no tool_calls
+    — the M8 text path is byte-for-byte identical."""
+    transport = FakeTransport([("ok", RESPONSE_BODY)])
+    brain = GeminiBrain(api_key=SECRET, transport=transport)
+    assert brain.supports_native() is False
+    completion = brain.complete(MESSAGES)
+    url, payload, _ = transport.calls[0]
+    assert "tools" not in payload           # nothing offered -> nothing sent
+    assert completion.tool_calls == []      # empty -> agent takes text path
+
+
+def test_native_on_sends_tools_and_toolconfig():
+    """native=True + tools passed -> payload carries functionDeclarations
+    + AUTO mode; key still never rides in the URL."""
+    transport = FakeTransport([("ok", RESPONSE_BODY)])
+    brain = GeminiBrain(api_key=SECRET, transport=transport, native=True)
+    assert brain.supports_native() is True
+    tools = build_tools_payload(_registry_with(
+        Tool(name="calculator", description="eval",
+             params={"expression": {"type": "number", "required": True}})))
+    completion = brain.complete(MESSAGES, tools=tools)
+    url, payload, _ = transport.calls[0]
+    assert "key" not in url                 # credential rule holds in native mode
+    decls = payload["tools"][0]["functionDeclarations"]
+    assert decls[0]["name"] == "calculator"
+    assert payload["toolConfig"] == {"functionCallingConfig": {"mode": "AUTO"}}
+    assert completion.tool_calls == []        # prose reply -> no call offered
+
+
+def test_complete_tools_param_sends_what_was_passed():
+    """complete(messages, tools=...) sends exactly that fragment."""
+    transport = FakeTransport([("ok", RESPONSE_BODY)])
+    brain = GeminiBrain(api_key=SECRET, transport=transport, native=True)
+    completion = brain.complete(MESSAGES,
+        tools={"tools": [{"functionDeclarations": [{"name": "calc"}]}],
+               "toolConfig": {"functionCallingConfig": {"mode": "AUTO"}}})
+    url, payload, _ = transport.calls[0]
+    assert payload["tools"][0]["functionDeclarations"] == [{"name": "calc"}]
+
+
+def test_function_calls_map_to_completion_tool_calls():
+    """A native reply carrying a functionCall surfaces it as tool_calls,
+    while thought parts stay filtered (M8.1 separate-channel contract)."""
+    body = {"candidates": [{"content": {"role": "model", "parts": [
+        {"thought": True, "text": "let me compute"},
+        {"functionCall": {"name": "calculator",
+                          "args": {"expression": "7*6"}}},
+    ]}}]}
+    transport = FakeTransport([("ok", body)])
+    brain = GeminiBrain(api_key=SECRET, transport=transport)
+    completion = brain.complete(MESSAGES)
+    assert completion.tool_calls == [{"name": "calculator",
+                                      "args": {"expression": "7*6"}}]
+    assert completion.text == ""            # no prose text in a functionCall turn
+
+
+def test_completion_tool_calls_empty_when_none_returned():
+    transport = FakeTransport([("ok", RESPONSE_BODY)])
+    brain = GeminiBrain(api_key=SECRET, transport=transport)
+    completion = brain.complete(MESSAGES)
+    assert completion.tool_calls == []
+    assert completion.text == "Thought: done\nFinal Answer: three"

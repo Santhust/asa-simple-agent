@@ -181,3 +181,85 @@ def test_run_ids_unique_across_runs():
     run_ids = {ev.run_id for ev in events if ev.run_id}
     assert run_id_1 in run_ids
     assert run_id_2 in run_ids
+
+
+def test_protocol_error_empty_reply_carries_failure_kind():
+    """Demonstrates: empty reply → protocol.error with failure: "empty_reply".
+
+    Why it matters: the detective needs to distinguish silence from format
+    drift — both are "protocol.error" but different failure kinds.
+    """
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import MockBrain
+
+    agent = Agent(MockBrain(script=[""]), narrate=False, max_steps=1)
+    agent.run("test")
+
+    events = read_events()
+    errors = [e for e in events if e.kind == "protocol.error"]
+    assert len(errors) == 1
+    assert errors[0].payload["failure"] == "empty_reply"
+    assert errors[0].payload["message"] == "empty reply"
+
+
+def test_protocol_error_drift_carries_failure_kind():
+    """Demonstrates: unparseable reply → protocol.error with failure: "protocol_drift".
+
+    Why it matters: format drift is a different failure than silence — the
+    detective's bisect needs to know which.
+    """
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import MockBrain
+
+    agent = Agent(MockBrain(script=["hello world"]), narrate=False, max_steps=1)
+    agent.run("test")
+
+    events = read_events()
+    errors = [e for e in events if e.kind == "protocol.error"]
+    assert len(errors) == 1
+    assert errors[0].payload["failure"] == "protocol_drift"
+
+
+def test_tool_error_carries_failure_kind():
+    """Demonstrates: tool result with error → tool.result with failure: "tool_error".
+
+    Why it matters: a crashing or misbehaving tool is a distinct failure kind
+    from protocol drift or budget exhaustion.
+    """
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import MockBrain
+
+    agent = Agent(MockBrain(script=[
+        'Thought: compute\nAction: calculator\nAction Input: {"expression": "notanumber"}',
+        "Thought: done\nFinal Answer: ok",
+    ]), narrate=False, max_steps=3)
+    agent.run("compute")
+
+    events = read_events()
+    errors = [e for e in events if e.kind == "tool.result" and e.payload.get("failure")]
+    assert len(errors) >= 1
+    assert all(e.payload["failure"] == "tool_error" for e in errors)
+
+
+def test_budget_exhausted_carries_failure_kind():
+    """Demonstrates: max_steps termination → loop.terminate with failure: "budget_exhausted".
+
+    Why it matters: running out of steps is a distinct failure from a bad
+    letter — the detective needs to know the run died of starvation, not
+    confusion.
+    """
+    from asa.trace import read_events
+    from asa.agent import Agent
+    from asa.brain import MockBrain
+
+    agent = Agent(MockBrain(script=["hello world"]), narrate=False, max_steps=1)
+    agent.run("test")
+
+    events = read_events()
+    terminates = [e for e in events if e.kind == "loop.terminate"]
+    assert len(terminates) == 1
+    assert terminates[0].payload["reason"] == "max_steps"
+    assert terminates[0].payload["failure"] == "budget_exhausted"

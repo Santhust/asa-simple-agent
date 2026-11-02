@@ -172,13 +172,20 @@ If you see a gentle note about fixing your letter, correct the format and try ag
                         obs = f"Observation (error): {result.output}"
                 except Exception as e:
                     obs = f"Observation (error): tool '{call.name}' crashed: {e}"
-                write_event("tool.result", {"name": call.name, "output": result.output if 'result' in locals() else str(obs), "error": getattr(result, 'is_error', False) if 'result' in locals() else False})
+                is_error = getattr(result, 'is_error', False) if 'result' in locals() else False
+                failure_kind = "tool_error" if is_error else None
+                result_payload = {"name": call.name, "output": result.output if 'result' in locals() else str(obs), "error": is_error}
+                if failure_kind:
+                    result_payload["failure"] = failure_kind
+                write_event("tool.result", result_payload)
                 self.memory.add("user", obs)
                 if self.narrate:
                     N.info(f"tool ran · {call.name} -> {obs[:80]}...")
                 continue  # loop again with observation in memory
             elif verdict.kind == "error" and verdict.error is not None:
-                write_event("protocol.error", {"message": verdict.error.message})
+                error_msg = verdict.error.message
+                failure_kind = "empty_reply" if error_msg == "empty reply" else "protocol_drift"
+                write_event("protocol.error", {"message": error_msg, "failure": failure_kind})
                 obs = f"Observation: {verdict.error.message}"
                 self.memory.add("user", obs)
                 if self.narrate:
@@ -203,7 +210,7 @@ If you see a gentle note about fixing your letter, correct the format and try ag
             steps=self.step_count,
             tokens=self.memory.token_count(),
         )
-        write_event("loop.terminate", {"reason": "max_steps"})
+        write_event("loop.terminate", {"reason": "max_steps", "failure": "budget_exhausted"})
         return self.result
 
     # ---- narration (front-of-house; memory.py stays pure) ------------------

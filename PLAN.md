@@ -195,9 +195,17 @@ Same stream feeds the narrated CLI and the HTML playground player.
   (M9 function-calling teachable locally too, not only Gemini) and **thinking** ON by default
   (interacts with ReAct text parsing — policy decided at M7.0).)*
   **Sub-milestones (one concept each):**
-  - [ ] **M7.0** _Map + decisions_ (no code): endpoint localhost:11434; `/api/chat` to match our
+  - [x] **M7.0** _Map + decisions_ (no code): endpoint localhost:11434; `/api/chat` to match our
         message-list → Completion shape; thinking policy for ReAct (off? captured separately?);
         model tag as config string `lfm3:latest`; stdlib HTTP only (no pip); timeout/retry for slow local inference.
+        **Decisions pinned (2026-11-02):**
+        - endpoint `http://localhost:11434` (user-confirmed); model tag = config string, default `lfm3:latest`
+        - API: `/api/chat` (message-list in → text out; matches `Message.render()` → `Completion` shape)
+        - **thinking policy: OFF for ReAct** (`think: false`) — user chose predictability + speed;
+          thinking capture stays a one-flag later toggle, no re-architecture.
+        - stdlib `urllib.request` only (zero pip deps); long timeout + 1 gentle retry (local inference is slow)
+        - `num_predict` output cap ~512 default, overridable (bounds runaway on slow hardware)
+  - stage: M7.0 decisions pinned (chat API, think:false, urllib, retry, num_predict)
   - [ ] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
         with a fake transport + live smoke test that SKIPS when Ollama isn't running.
   - [ ] **M7.2** _First real words_ — narrated live run `--brain ollama`; observe thinking behavior

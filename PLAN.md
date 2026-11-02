@@ -388,17 +388,25 @@ Same stream feeds the narrated CLI and the HTML playground player.
       - stage: M9.4 close-out — PLAN ticks + stage notes, full pytest green (197), AGENTS count refreshed
       - stage: Dropped M10 GPT2Brain (intentional-failure demo) — never implemented; roadmap now runs M11 → M12 → M13
 
-- [~] **M11** Docs: 7 illustrated topics (single combined doc `docs/asa-docs.html`, Option B)
+- [x] **M11** Docs: 7 illustrated topics (single combined doc `docs/asa-docs.html`, Option B)
   **Sub-milestones (one concept each):**
-  - [ ] **M11.1** _Doc shell + Topic 1_ — HTML/CSS shell (header, TOC, prev/next nav) +
+  - [x] **M11.1** _Doc shell + Topic 1_ — HTML/CSS shell (header, TOC, prev/next nav) +
         topic 1: what is an agent (SVG + story + code pointers + self-check quiz)
-  - [ ] **M11.2** _Topic 2_ — the loop (replays Task→ContextWindow→Brain→protocol→tool→Observation→back)
-  - [ ] **M11.3** _Topic 3_ — context/memory (ContextWindow append·trim·token budget; age-first eviction)
-  - [ ] **M11.4** _Topic 4_ — tools & registry & prompt-craft (catalogue = the model's world of capabilities)
-  - [ ] **M11.5** _Topic 5_ — parsing / two protocols (ReAct letters vs native function calls; same ToolCall box)
-  - [ ] **M11.6** _Topic 6_ — the brain zoo (MockBrain, OllamaBrain/lfm3, GeminiBrain; swap-is-the-lesson)
-  - [ ] **M11.7** _Topic 7_ — observability & failure modes (trace JSONL, run_id, failure taxonomy, detective)
-  - [ ] **M11.8** _Close-out_ — PLAN tick + stage notes; full pytest green (197); AGENTS count unchanged
+  - [x] **M11.2** _Topic 2_ — the loop (replays Task→ContextWindow→Brain→protocol→tool→Observation→back)
+  - [x] **M11.3** _Topic 3_ — context/memory (ContextWindow append·trim·token budget; age-first eviction)
+  - [x] **M11.4** _Topic 4_ — tools & registry & prompt-craft (catalogue = the model's world of capabilities)
+  - [x] **M11.5** _Topic 5_ — parsing / two protocols (ReAct letters vs native function calls; same ToolCall box)
+  - [x] **M11.6** _Topic 6_ — the brain zoo (MockBrain, OllamaBrain/lfm3, GeminiBrain; swap-is-the-lesson)
+  - [x] **M11.7** _Topic 7_ — observability & failure modes (trace JSONL, run_id, failure taxonomy, detective)
+  - [x] **M11.8** _Close-out_ — PLAN tick + stage notes; full pytest green (197); AGENTS count unchanged
+      - stage: M11.1 doc shell + Topic 1 (what is an agent)
+      - stage: M11.2 Topic 2 the loop
+      - stage: M11.3 Topic 3 context/memory
+      - stage: M11.4 Topic 4 tools/registry/prompt-craft
+      - stage: M11.5 Topic 5 parsing/two protocols
+      - stage: M11.6 Topic 6 brain zoo
+      - stage: M11.7 Topic 7 observability/failure modes
+      - stage: M11.8 close-out — docs/asa-docs.html complete, 7 topics, inline SVG + quizzes, 17 code pointers
 
 - [ ] **M12** HTML playground (offline via pre-recorded traces)
 - [ ] **M13** Live mode (serve.py SSE) + README quickstart + final walkthrough

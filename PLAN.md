@@ -206,8 +206,11 @@ Same stream feeds the narrated CLI and the HTML playground player.
         - stdlib `urllib.request` only (zero pip deps); long timeout + 1 gentle retry (local inference is slow)
         - `num_predict` output cap ~512 default, overridable (bounds runaway on slow hardware)
   - stage: M7.0 decisions pinned (chat API, think:false, urllib, retry, num_predict)
-  - [ ] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
+  - stage: M7.1 OllamaBrain skeleton (chat payload, think:false, transport seam, fail-soft; live smoke ran)
+  - [x] **M7.1** _OllamaBrain skeleton_ — `complete()` speaks HTTP to Ollama; offline unit tests
         with a fake transport + live smoke test that SKIPS when Ollama isn't running.
+        *(Built 2026-11-02: transport injectable, 8 offline tests + live smoke (RAN — Ollama
+        was up); 122 tests green.)*
   - [ ] **M7.2** _First real words_ — narrated live run `--brain ollama`; observe thinking behavior
         in practice, decide where it goes (trace? memory? nowhere?).
   - [ ] **M7.3** _Does the real model write a parseable letter?_ — one-step calculator task;

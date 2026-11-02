@@ -388,7 +388,18 @@ Same stream feeds the narrated CLI and the HTML playground player.
       - stage: M9.4 close-out — PLAN ticks + stage notes, full pytest green (197), AGENTS count refreshed
       - stage: Dropped M10 GPT2Brain (intentional-failure demo) — never implemented; roadmap now runs M11 → M12 → M13
 
-- [ ] **M11** Docs: 7 illustrated topics
+- [~] **M11** Docs: 7 illustrated topics (single combined doc `docs/asa-docs.html`, Option B)
+  **Sub-milestones (one concept each):**
+  - [ ] **M11.1** _Doc shell + Topic 1_ — HTML/CSS shell (header, TOC, prev/next nav) +
+        topic 1: what is an agent (SVG + story + code pointers + self-check quiz)
+  - [ ] **M11.2** _Topic 2_ — the loop (replays Task→ContextWindow→Brain→protocol→tool→Observation→back)
+  - [ ] **M11.3** _Topic 3_ — context/memory (ContextWindow append·trim·token budget; age-first eviction)
+  - [ ] **M11.4** _Topic 4_ — tools & registry & prompt-craft (catalogue = the model's world of capabilities)
+  - [ ] **M11.5** _Topic 5_ — parsing / two protocols (ReAct letters vs native function calls; same ToolCall box)
+  - [ ] **M11.6** _Topic 6_ — the brain zoo (MockBrain, OllamaBrain/lfm3, GeminiBrain; swap-is-the-lesson)
+  - [ ] **M11.7** _Topic 7_ — observability & failure modes (trace JSONL, run_id, failure taxonomy, detective)
+  - [ ] **M11.8** _Close-out_ — PLAN tick + stage notes; full pytest green (197); AGENTS count unchanged
+
 - [ ] **M12** HTML playground (offline via pre-recorded traces)
 - [ ] **M13** Live mode (serve.py SSE) + README quickstart + final walkthrough
 

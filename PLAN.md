@@ -27,9 +27,7 @@ verbose narration, checkpointing with the user after each milestone.
    (pin exact current numbers from the AI Studio rate-limits page at Milestone 8)
 7. **Protocols**: learn BOTH — textual ReAct (universal) AND native function calling.
    Agent core speaks only `ToolCall(name, args)`; adapters convert model output.
-8. **gpt2-medium locally**: revisit as an INTENTIONAL-FAILURE demo — base (non-instruction-
-   tuned) LM cannot follow the ReAct protocol; demonstrating why is a core lesson.
-9. **Naming**: `asa` = "a simple agent". `asca` = "a simple coding agent": possibly later.
+8. **Naming**: `asa` = "a simple agent". `asca` = "a simple coding agent": possibly later.
 
 ## Architecture
 ```
@@ -50,7 +48,7 @@ verbose narration, checkpointing with the user after each milestone.
 | Module | Role | Lesson |
 |---|---|---|
 | memory.py    | ContextWindow: append, token estimate, trim-on-overflow | how an agent "remembers" |
-| brain.py     | Brain interface + MockBrain (Ollama/Gemini/GPT2 planned M7/M8/M10) | engine-agnostic design |
+| brain.py     | Brain interface + MockBrain (Ollama/Gemini) | engine-agnostic design |
 | protocol_react.py  | parse Thought:/Action:/Action Input: (+ error repair) — **planned M4** | text -> structure |
 | protocol_native.py | native tool declarations + FunctionCall -> ToolCall — **planned M9** | API function calling |
 | tool.py / tools/   | Tool dataclass, JSON-schema params; Calculator, Notes, clock, plan-board | the agent's "hands" |
@@ -127,7 +125,6 @@ Same stream feeds the narrated CLI and the HTML playground player.
 | MockBrain  | local  | deterministic, no deps; tests / offline / golden traces |
 | OllamaBrain| local  | lfm3:latest default (1.7B, Q4_K_M, 256K ctx; native tools+thinking); stdlib HTTP (no pip); zero-cost path |
 | GeminiBrain| cloud  | Gemini 3.1/3.5 Flash Lite (15 RPM...) + Gemma 4 by name |
-| GPT2Brain  | local  | INTENTIONAL-FAILURE demo: why instruction-tuning matters |
 
 ## Learning layers
 - CLI narrator: color-coded stages, what/how/why annotations, timings. --verbose / --explain.
@@ -389,7 +386,8 @@ Same stream feeds the narrated CLI and the HTML playground player.
       - stage: M9.3 compare_protocols lab — run_once/compare/narrate, trace-derived drift+repair metrics, offline MockBrain tests + live Gemini side-by-side (native: 0 drift/repair, ~3.5x faster, both final_answer)
   - [x] **M9.4** _Close-out_ — PLAN tick + stage notes; full pytest; AGENTS count refresh.
       - stage: M9.4 close-out — PLAN ticks + stage notes, full pytest green (197), AGENTS count refreshed
-- [ ] **M10** GPT2Brain failure demo
+      - stage: Dropped M10 GPT2Brain (intentional-failure demo) — never implemented; roadmap now runs M11 → M12 → M13
+
 - [ ] **M11** Docs: 7 illustrated topics
 - [ ] **M12** HTML playground (offline via pre-recorded traces)
 - [ ] **M13** Live mode (serve.py SSE) + README quickstart + final walkthrough

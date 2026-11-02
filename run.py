@@ -22,7 +22,7 @@ from asa.registry import ToolRegistry
 
 # The brain zoo, wired one member at a time per milestone:
 #   mock   = deterministic (M2)   |   ollama = first REAL local brain (M7)
-#   gemini = first CLOUD brain (M8)   |   coming: gpt2 -> M10
+#   gemini = first CLOUD brain (M8/M9)
 BRAINS = {"mock": MockBrain, "ollama": OllamaBrain, "gemini": GeminiBrain}
 
 

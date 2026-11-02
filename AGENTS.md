@@ -27,7 +27,6 @@ Read the full game plan in `PLAN.md` before starting work; update it as the plan
                   planning-era limits 15 RPM / 250K TPM / 500 RPD; no quota headers on responses,
                   exact numbers to be pinned from user's AI Studio page (M8.2) · Gemma 4 26B/31B
                   selectable by name.
-- `GPT2Brain`   : INTENTIONAL FAILURE demo (base LM, not instruction-tuned)
 - swapping brains IS the lesson: a model is a text-in/text-out box to the agent.
 
 ## Learning layers

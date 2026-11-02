@@ -60,7 +60,7 @@
   <text x="300" y="387" font-size="11" font-weight="700" fill="#1f6fb2" text-anchor="end">core ✓</text>
   <text x="52" y="408" font-size="12" fill="#173a5c">MockBrain: canned · deterministic · offline (tests + golden runs)</text>
   <text x="52" y="423" font-size="11" fill="#3d5f80">+ OllamaBrain (M7): lfm3:latest · /api/chat · think:True · 7.2 tok/s pinned</text>
-  <text x="52" y="437" font-size="11" fill="#3d5f80">gemini (M8) / gpt2 (M10) still dashed · BRAINS = {"mock", "ollama"}</text>
+  <text x="52" y="437" font-size="11" fill="#3d5f80">GeminiBrain (M8/M9) built · BRAINS = {"mock", "ollama", "gemini"}</text>
   <line x1="175" y1="443" x2="175" y2="458" stroke="#2e7d4f" stroke-width="2" marker-end="url(#arr-green)"/>
 
   <!-- 5 · Completion -->
@@ -120,7 +120,7 @@
   <text x="380" y="354" font-size="13" font-weight="700" fill="#1f2430">Physical repo today — everything that exists</text>
   <text x="380" y="378" font-size="12" fill="#22303c"><tspan fill="#2e7d4f" font-weight="700">✓ </tspan>asa/{agent, brain, memory, tool, registry, narrate, tokens, protocol_react M4, trace M6}.py · asa/tools/{calculator, clock, notes, plan_board}.py</text>
   <text x="380" y="400" font-size="12" fill="#22303c"><tspan fill="#2e7d4f" font-weight="700">✓ </tspan>run.py · bench.py (M7.4) · tests/ · conftest.py · lab/{tool, registry, tools, state, parser}_lab.py — one internal per script</text>
-  <text x="380" y="418" font-size="12" fill="#5a6472"><tspan fill="#b4552d" font-weight="700">✗ </tspan>not yet: GeminiBrain (M8) · native calling (M9) · GPT2 fail-demo (M10) · docs/ 7-topic series · playground/ · serve.py</text>
+  <text x="380" y="418" font-size="12" fill="#5a6472"><tspan fill="#b4552d" font-weight="700">✗ </tspan>not yet: docs/ 7-topic series · playground/ · serve.py</text>
   <text x="380" y="436" font-size="11" fill="#5a6472">132 green: M0–M7 suites · M7 frozen real-letters (verbatim lfm3) · bench 6 · live smoke (skips when Ollama down) · trace isolation fixed</text>
 
   <!-- Panel C · roadmap -->
@@ -151,9 +151,6 @@
     <rect x="480" y="546" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
     <text x="526" y="561" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M9</text>
     <text x="526" y="575" text-anchor="middle">native calling</text>
-    <rect x="580" y="546" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
-    <text x="626" y="561" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M10</text>
-    <text x="626" y="575" text-anchor="middle">GPT2 fail-demo</text>
     <rect x="680" y="546" width="92" height="36" rx="6" fill="#f3f5f7" stroke="#9aa4ae" stroke-width="1"/>
     <text x="726" y="561" font-size="11" font-weight="700" fill="#1f2430" text-anchor="middle">M11</text>
     <text x="726" y="575" text-anchor="middle">docs · 7 topics</text>

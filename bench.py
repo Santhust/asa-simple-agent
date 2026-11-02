@@ -30,7 +30,7 @@ from typing import Callable
 from asa.agent import Agent
 from asa.brain import GeminiBrain, MockBrain, OllamaBrain
 
-# The brain zoo, same mapping as run.py (gemini -> M8/M9, gpt2 -> M10).
+# The brain zoo, same mapping as run.py (gemini -> M8/M9).
 # gemini is included only when a key is available — bench never hardcodes
 # credentials and never fails the whole run because one brain can't reach the net.
 BRAIN_FACTORIES: dict[str, Callable[[], object]] = {

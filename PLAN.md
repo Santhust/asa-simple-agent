@@ -277,6 +277,7 @@ Same stream feeds the narrated CLI and the HTML playground player.
   - stage: M8.2 --brain gemini wired; first cloud run (correct letter, empty→note→heal); silence named: MALFORMED_RESPONSE; M6 request-order debt fixed (M6.3b)
   - stage: M8.3 rate-limit fail-soft: 429 retries once (Retry-After honored), then guidance; 403 immediate; fake-transport tests green
   - stage: M8.4.1 run_id + session.start: every Event carries run_id; session.start written by agent.run(); 4 new tests
+  - stage: M8.4.2 failure taxonomy: protocol.error → empty_reply/protocol_drift; tool.result → tool_error; loop.terminate max_steps → budget_exhausted; 4 new tests
   - [x] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
         tests with fake transport; live smoke skips when no key/network. *(Built + live-probed
         2026-11-02: 9 offline tests + live smoke RAN (key present — first real Gemini words);
@@ -308,9 +309,10 @@ Same stream feeds the narrated CLI and the HTML playground player.
         detective can separate runs in the shared trace file. *(Built 2026-11-02: run_id
         minted on reset_session(), stamped on every Event, session.start written by
         agent.run(); 4 new tests.)*
-  - [ ] **M8.4.2** _Failure taxonomy_ — named failure kinds in trace payloads
+  - [x] **M8.4.2** _Failure taxonomy_ — named failure kinds in trace payloads
         (empty_reply · protocol_drift · tool_error · network · budget_exhausted ·
-        rate_limited).
+        rate_limited). *(Built 2026-11-02: protocol.error → empty_reply/protocol_drift;
+        tool.result → tool_error; loop.terminate max_steps → budget_exhausted; 4 new tests.)*
   - [ ] **M8.4.3** _lab/detective_lab.py_ — reads a trace, extracts failing
         brain.request contexts, converts render()→native, replays against the brain
         (one-variable bisect), offline-first.

@@ -9,6 +9,7 @@ So swapping the brain never changes agent code. That swapability is a lesson in 
 """
 
 import json
+import os
 import time
 import urllib.error
 import urllib.request
@@ -253,3 +254,176 @@ class OllamaBrain(Brain):
     def describe(self) -> str:
         return (f"OllamaBrain(model={self.model!r}, host={self.host!r}, "
                 f"think={self.think}, num_predict={self.num_predict})")
+
+
+DEFAULT_GEMINI_HOST = "https://generativelanguage.googleapis.com"
+
+
+class GeminiUnavailable(RuntimeError):
+    """Google's API could not be reached, refused us, or we lack a key.
+
+    Same contract as OllamaUnavailable: the failure carries guidance a
+    beginner can act on. It NEVER interpolates the API key (M8.0 credential
+    rules): the key rides in a header and never enters a message or URL.
+    """
+
+
+class GeminiBrain(Brain):
+    """The brain zoo's first CLOUD member (M8): Gemini via Google's free tier.
+
+    Same text-in/text-out seam as MockBrain/OllamaBrain — same complete(),
+    same Completion, zero agent-code changes. Third JSON dialect so far:
+      * our "system" message -> Gemini's SEPARATE `systemInstruction` field
+      * Message list -> `contents[]` with roles "user" / "model"
+        (Gemini has no "system" role inside contents and no "assistant";
+        the <role> render() prefix is OUR narration and is NOT sent)
+      * thinking: pinned OFF for ReAct at M8.0 (`thinkingBudget: 0`) —
+        the M7.0 lesson: an honest default, amendable by reality
+      * failure policy: transient errors get 1 gentle retry; HTTP errors are
+        surfaced immediately (a 4xx won't heal) with the key NEVER in them
+
+    Credential rules (M8.0), enforced here in code:
+      * key from the GEMINI_API_KEY env var (or explicit api_key= param)
+      * key sent ONLY in the x-goog-api-key HEADER — never a URL query
+        parameter, so no log, trace, or error can capture it
+      * no payload recorded in self.last_payload contains the key either
+    """
+
+    name = "gemini"
+
+    def __init__(self, model: str = "gemini-3.5-flash-lite",
+                 host: str = DEFAULT_GEMINI_HOST, *,
+                 api_key: str | None = None, api_key_env: str = "GEMINI_API_KEY",
+                 thinking: bool = False, max_output_tokens: int = 512,
+                 timeout: float = 120.0, retries: int = 1, retry_wait: float = 1.0,
+                 transport=None):
+        self.model = model
+        self.host = host.rstrip("/")
+        self._api_key = api_key
+        self._api_key_env = api_key_env
+        self.thinking = thinking
+        self.max_output_tokens = max_output_tokens
+        self.timeout = timeout
+        self.retries = retries
+        self.retry_wait = retry_wait
+        self._transport = transport or self._default_transport
+        self.call_count = 0   # transport calls: bench parity with the other brains
+        self.total_output_tokens = 0  # REAL counts from usageMetadata, aggregated
+        self.last_payload: dict | None = None  # for inspection: NEVER holds the key
+
+    # -- the seam the tests swap ---------------------------------------------
+    def _default_transport(self, url: str, payload: dict, timeout: float) -> tuple:
+        """The only network code in the brain: one urllib POST with the key in
+        the header (M8.0: never a query parameter)."""
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(url, data=body, headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": self._resolve_api_key(),
+        })
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+
+    def _resolve_api_key(self) -> str:
+        """Find the key or fail with guidance that names the missing thing."""
+        if self._api_key:
+            return self._api_key
+        key = os.environ.get(self._api_key_env, "")
+        if key:
+            return key
+        raise GeminiUnavailable(
+            f"no API key found (looked for env var {self._api_key_env!r}) — export "
+            f"GEMINI_API_KEY before starting the session, or pass api_key=; "
+            f"credential rules M8.0: never hardcode, never commit")
+
+    # -- request shaping: our Message -> Gemini generateContent ---------------
+    def _build_payload(self, messages: list[Message], thinking: bool,
+                       max_output_tokens: int) -> dict:
+        system_parts: list[str] = []
+        contents = []
+        for m in messages:
+            if m.role == "system":
+                system_parts.append(m.content)  # standing rules -> its own field
+            else:
+                contents.append({
+                    # Gemini's chat roles: "user" / "model" — our "assistant"
+                    # maps to "model" (third dialect, same role-in-field lesson)
+                    "role": {"user": "user", "assistant": "model"}[m.role],
+                    "parts": [{"text": m.content}],
+                })
+        generation_config: dict = {"maxOutputTokens": max_output_tokens}
+        # M8.2 LIVE AMENDMENT of the M8.0 think-off pin: this model REJECTS
+        # thinkingConfig.thinkingBudget=0 with 400 INVALID_ARGUMENT (bisected
+        # one-variable-at-a-time, see PLAN). So we never send thinkingConfig:
+        # thinking stays a model default, thought parts are FILTERED by
+        # _to_completion — the separate-channel contract still holds.
+        payload: dict = {"contents": contents, "generationConfig": generation_config}
+        if system_parts:
+            payload["systemInstruction"] = {"parts": [{"text": "\n\n".join(system_parts)}]}
+        return payload
+
+    def complete(self, messages: list[Message], **params) -> Completion:
+        """Ask Gemini generateContent and map the reply into a Completion."""
+        allowed = ("model", "thinking", "max_output_tokens")
+        unknown = set(params) - set(allowed)
+        if unknown:
+            raise ValueError(
+                f"unknown param(s) {sorted(unknown)} — allowed: {list(allowed)}")
+        payload = self._build_payload(
+            messages,
+            thinking=params.get("thinking", self.thinking),
+            max_output_tokens=params.get("max_output_tokens", self.max_output_tokens),
+        )
+        model = params.get("model", self.model)
+        url = f"{self.host}/v1beta/models/{model}:generateContent"
+        attempts = self.retries + 1
+        last_err: Exception | None = None
+        for attempt in range(1, attempts + 1):
+            self.call_count += 1
+            self.last_payload = payload
+            try:
+                _, body = self._transport(url, payload, self.timeout)
+            # The server SPOKE (400 bad model, 403 bad key, 429 too fast,..):
+            # surfacing immediately with code+reason — and NO key material.
+            except urllib.error.HTTPError as e:
+                raise GeminiUnavailable(
+                    f"Gemini answered HTTP {e.code} ({e.reason}) for {self.model!r} "
+                    f"— check the model tag, the key's restrictions, and the rate limit") from e
+            # No answer at all: fail-soft — one gentle retry.
+            except (urllib.error.URLError, OSError, json.JSONDecodeError) as e:
+                last_err = e
+                if attempt < attempts and self.retry_wait > 0:
+                    time.sleep(self.retry_wait)
+                continue
+            self._note_usage(body)
+            return self._to_completion(body, messages)
+        raise GeminiUnavailable(
+            f"could not reach Google's API at {self.host} after {attempts} attempt(s) "
+            f"({last_err!r}) — check the network") from last_err
+
+    # -- response mapping: Gemini JSON -> Completion --------------------------
+    @staticmethod
+    def _to_completion(body: dict, messages: list[Message]) -> Completion:
+        parts = (((body.get("candidates") or [{}])[0]).get("content") or {}).get("parts") or []
+        # Thought parts (present only when thinking is enabled) never enter the
+        # letter we parse — same separate-channel contract as Ollama's thinking.
+        text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+        usage = body.get("usageMetadata") or {}
+        return Completion(
+            text=text,
+            model=body.get("modelVersion") or "gemini",
+            # REAL token counts when Google reports them; our estimator as the
+            # fallback, mirroring OllamaBrain (bench numbers never sit at 0).
+            prompt_tokens=usage.get("promptTokenCount")
+            or sum(estimate_tokens(m.content) for m in messages),
+            completion_tokens=usage.get("candidatesTokenCount") or estimate_tokens(text),
+        )
+
+    def _note_usage(self, body: dict) -> None:
+        usage = body.get("usageMetadata") or {}
+        if usage.get("candidatesTokenCount"):
+            self.total_output_tokens += usage["candidatesTokenCount"]
+
+    def describe(self) -> str:
+        return (f"GeminiBrain(model={self.model!r}, host={self.host!r}, "
+                f"thinking={self.thinking}, max_output_tokens={self.max_output_tokens}, "
+                f"key=<set via env, never displayed>)")

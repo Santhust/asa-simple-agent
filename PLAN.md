@@ -355,14 +355,14 @@ Same stream feeds the narrated CLI and the HTML playground player.
           as JSON-typed values (numbers as numbers, bools as bools), so `parse_function_call()`
           does no `literal_eval`, no `_parse_kwargs`, no repair. M4.2/M4.3 exist only because
           text is lossy; native mode has no lossy hop to repair.
-        - **Agent core stays protocol-agnostic.** The loop calls `parse(reply)` today; in
-          native mode it calls `protocol_native.parse_function_call(completion)`. Which one
-          it calls is decided by the BRAIN, not the loop: we add two uniform hooks to the
-          `Brain` interface — `supports_native()` (bool) and `native_tools()` (list of
-          declarations). MockBrain/OllamaBrain → False/[] (they speak text only). The loop
-          becomes: `if brain.supports_native(): verdict = native_parse(...) else:
-          verdict = react_parse(...)`. Same `ReActParsed`-shaped verdict either way, so the
-          rest of the loop is untouched. This keeps the SEAM honest and test-visible.
+        - **Agent core stays protocol-agnostic.** `Brain.supports_native()` (bool,
+          default False) is the only hook — MockBrain/OllamaBrain inherit False
+          (text only), GeminiBrain overrides True when `native=` is set. The agent
+          loop asks the brain, then builds the declarations itself via
+          `protocol_native.build_tools_payload(registry)` and passes them as
+          `complete(messages, tools=...)`. Same `ReActParsed`-shaped verdict either
+          way, so the rest of the loop is untouched. This keeps the SEAM honest and
+          test-visible.
         - **GeminiBrain native mode is opt-in, never the default.** `complete(messages, tools=None)`:
           `tools` is None → current text behaviour, byte-for-byte unchanged (M8 tests stay
           green). `tools=[...]` → send the declarations + toolConfig, and the response may
@@ -375,16 +375,20 @@ Same stream feeds the narrated CLI and the HTML playground player.
         - stdlib `urllib` only; transport seam reused (fake HTTP in tests); live smoke
           skips without GEMINI_API_KEY, exactly like M8.1.
       - stage: M9.0 decisions pinned (functionDeclarations shape, ToolCall↔functionCall contract, brain-owned protocol selection, opt-in native mode, transport seam)
-  - [ ] **M9.1** _protocol_native skeleton_ — native adapter: build_tools_payload()
+  - [x] **M9.1** _protocol_native skeleton_ — native adapter: build_tools_payload()
         (functionDeclarations from registry schemas), parse_function_call()
         (Gemini functionCall → ToolCall), offline unit tests, no network.
-  - [ ] **M9.2** _GeminiBrain native mode_ — accepts optional tool schemas, sends
+      - stage: M9.1 protocol_native skeleton — Completion.tool_calls channel, build_tools_payload renders registry→JSON Schema, parse_function_call is a thin shim (no eval/repair), 13 offline tests
+  - [x] **M9.2** _GeminiBrain native mode_ — accepts optional tool schemas, sends
         functionDeclarations + function calling config, falls back to plain text
         when no tools offered; thinking stays filtered (M8.1 lesson).
-  - [ ] **M9.3** _Side-by-side benchmark_ — same task through ReAct (protocol_react)
+      - stage: M9.2 GeminiBrain native mode — supports_native() hook, opt-in native=True, complete(messages, tools=...) merges declarations + AUTO toolConfig, functionCall parts mapped to tool_calls; text mode byte-identical to M8
+  - [x] **M9.3** _Side-by-side benchmark_ — same task through ReAct (protocol_react)
         vs native (protocol_native): compare letter-drift rate, repair count, steps,
         tokens, wall time; lab-style narrated comparison.
-  - [ ] **M9.4** _Close-out_ — PLAN tick + stage notes; full pytest; AGENTS count refresh.
+      - stage: M9.3 compare_protocols lab — run_once/compare/narrate, trace-derived drift+repair metrics, offline MockBrain tests + live Gemini side-by-side (native: 0 drift/repair, ~3.5x faster, both final_answer)
+  - [x] **M9.4** _Close-out_ — PLAN tick + stage notes; full pytest; AGENTS count refresh.
+      - stage: M9.4 close-out — PLAN ticks + stage notes, full pytest green (197), AGENTS count refreshed
 - [ ] **M10** GPT2Brain failure demo
 - [ ] **M11** Docs: 7 illustrated topics
 - [ ] **M12** HTML playground (offline via pre-recorded traces)

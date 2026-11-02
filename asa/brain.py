@@ -116,8 +116,12 @@ class OllamaBrain(Brain):
     Talks to `/api/chat` with stdlib urllib only (ZERO pip deps). Decisions
     pinned at M7.0 (PLAN.md):
       * `/api/chat` — message-list in, text out (matches Message -> Completion)
-      * `think: False` — lfm3 reasons out loud by default; OFF so the reply
-        text is exactly the ReAct letter we parse (one-flag toggle later)
+      * `think: True` — ORIGINAL M7.0 pin was False for speed, but the live exam
+        (M7.3) falsified it: lfm3 is thinking-native, and with a multi-turn agent
+        context think=False produced EMPTY content. Ollama answers thinking in a
+        SEPARATE field (message.thinking), so content stays a clean ReAct letter
+        anyway — thinking on costs tokens but costs nothing in parsing purity.
+        *(Amended 2026-11-02 — the point where a reality check changed the plan.)*
       * long timeout + 1 gentle retry: local inference is slow and a blip
         should not kill a run; `num_predict` caps runaway generations
 
@@ -130,7 +134,7 @@ class OllamaBrain(Brain):
     name = "ollama"
 
     def __init__(self, model: str = "lfm3:latest", host: str = DEFAULT_OLLAMA_HOST, *,
-                 think: bool = False, num_predict: int = 512,
+                 think: bool = True, num_predict: int = 512,
                  temperature: float | None = None,
                  timeout: float = 120.0, retries: int = 1, retry_wait: float = 1.0,
                  transport=None):
@@ -172,7 +176,7 @@ class OllamaBrain(Brain):
                 {"role": m.role, "content": m.content} for m in messages
             ],
             "stream": False,  # one complete letter, not a token faucet
-            "think": think,   # M7.0 decision: thinking OFF for ReAct runs
+            "think": think,   # amended M7.0: thinking-native lfm3 goes MUTE under False
             "options": options,
         }
 

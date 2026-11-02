@@ -87,7 +87,7 @@ def test_payload_shapes_messages_for_native_chat():
     assert payload["messages"][0]["content"] == "You are 'asa'."  # RAW content, no "<system>" prefix
     assert payload["model"] == "lfm3:latest"
     assert payload["stream"] is False            # one letter, not a token faucet
-    assert payload["think"] is False             # M7.0 decision pinned in code
+    assert payload["think"] is True              # amended M7.0: thinking-native model goes mute under False
     assert payload["options"]["num_predict"] == 512  # runaway-generation cap
     assert "temperature" not in payload["options"]   # unset -> omitted, not None
 
@@ -150,12 +150,13 @@ def test_unknown_param_is_rejected_not_silently_ignored():
 
 
 def test_params_can_override_thinking_and_cap():
-    """The one-flag thinking toggle from M7.0: overridable per call."""
+    """The one-flag thinking toggle: overridable per call (OFF proven against
+    the amended default ON)."""
     brain, transport = make_brain([("ok", RESPONSE_BODY)])
-    brain.complete([Message(role="user", content="deep question")],
-                   think=True, num_predict=64)
+    brain.complete([Message(role="user", content="quick question")],
+                   think=False, num_predict=64)
     _, payload, _ = transport.calls[-1]
-    assert payload["think"] is True
+    assert payload["think"] is False
     assert payload["options"]["num_predict"] == 64
 
 
@@ -174,7 +175,7 @@ def _ollama_alive(host="localhost", port=11434) -> bool:
                     reason="live Ollama not reachable on localhost:11434 — "
                            "skipped honestly (offline suite stays instant)")
 def test_live_lfm3_first_words():
-    brain = OllamaBrain(num_predict=16, timeout=90)  # tiny cap: the Pi5 is slow
+    brain = OllamaBrain(num_predict=128, timeout=90)  # thinking eats a few tokens first
     completion = brain.complete([Message(role="user", content="Reply with exactly: OK")])
     assert completion.text.strip(), "live model returned empty text"
     assert "lfm3" in completion.model

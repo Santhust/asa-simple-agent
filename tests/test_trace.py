@@ -58,13 +58,10 @@ def test_write_and_read_events():
     Why it matters: the CLI and playground can replay the trace later.
     """
     from pathlib import Path
-    from asa.trace import reset_session, _TRACE_FILE
-    # Start with completely clean slate
-    reset_session()
-    # Explicitly clear the trace file
-    if _TRACE_FILE.exists():
-        _TRACE_FILE.unlink()
-    
+    from asa.trace import clear_trace
+    # Start with completely clean slate (conftest also does this; kept explicit)
+    clear_trace()
+
     # Write a few events
     write_event("session.start", {"task": "demo"})
     write_event("brain.request", {"prompt": "tools listed"})
@@ -85,13 +82,10 @@ def test_read_events_filters():
 
     Why it matters: playground pagination and debugging filters.
     """
-    from asa.trace import reset_session, _TRACE_FILE
-    # Start with completely clean slate
-    reset_session()
-    # Explicitly clear the trace file
-    if _TRACE_FILE.exists():
-        _TRACE_FILE.unlink()
-    
+    from asa.trace import clear_trace
+    # Start with completely clean slate (conftest also does this; kept explicit)
+    clear_trace()
+
     write_event("tool.invoke", {"step": 1})
     write_event("tool.result", {"step": 1})
     write_event("tool.invoke", {"step": 2})

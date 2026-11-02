@@ -264,12 +264,22 @@ Same stream feeds the narrated CLI and the HTML playground player.
           never hardcoded, never committed)
         - default model: **`gemini-3.5-flash-lite`** (free tier, planning-era 15 RPM / 250K TPM / 500 RPD;
           exact numbers re-pinned from the AI Studio page at M8.2's live probe)
-        - thinking: **off for ReAct** first attempt, amend-by-reality if the API/behaviour disagrees
-        - transport seam reused (fake HTTP in tests); timeout long, retry transient only —
-          429 policy gets its own sub-milestone (M8.3)
+      * thinking: **off for ReAct** first attempt, amend-by-reality if the API/behaviour disagrees
+        *(AMENDED 2026-11-02 during M8.1's live smoke: this model REJECTS
+        thinkingConfig.thinkingBudget=0 — 400 INVALID_ARGUMENT, bisected one-variable-from-minimum.
+        Resolution: thinkingConfig is never sent; the model's thinking stays a default and is
+        filtered out of the letter at mapping time. Same separate-channel outcome as lfm3, but
+        enforced by the API, not by us.)*
+      - transport seam reused (fake HTTP in tests); timeout long, retry transient only —
+        429 policy gets its own sub-milestone (M8.3)
   - stage: M8.0 decisions pinned (generateContent endpoint, systemInstruction split, GEMINI_API_KEY env, flash-lite, thinking off, transport seam)
-  - [ ] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
-        tests with fake transport; live smoke skips when no key/network.
+  - stage: M8.1 GeminiBrain skeleton (3rd dialect, header-only key, redaction, thought-part filter; live smoke RAN; budget=0 rejected → pin amended)
+  - [x] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
+        tests with fake transport; live smoke skips when no key/network. *(Built + live-probed
+        2026-11-02: 9 offline tests + live smoke RAN (key present — first real Gemini words);
+        the live probe falsified the think-off pin at the API level (budget=0 → 400) and forced
+        the mapping-time thought-filter amendment; credential rules enforced in code
+        (header-not-URL, redaction, missing-key guidance); M7.1 suite untouched.)*
   - [ ] **M8.2** _First real words_ — narrated live run; rate-limit headers OBSERVED and recorded
         into the trace (evidence, not vibes).
   - [ ] **M8.3** _Rate-limit fail-soft_ — 429 + Retry-After handled inside the existing gentle

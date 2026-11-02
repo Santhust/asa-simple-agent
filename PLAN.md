@@ -250,11 +250,24 @@ Same stream feeds the narrated CLI and the HTML playground player.
   The detective is a TOOL we run (forensic evidence + replay), NOT the agent introspecting —
   that ceiling is a later conversation.)*
   **Sub-milestones (one concept each):**
-  - [ ] **M8.0** _Map + decisions_ (no code): API endpoint + payload shape (system→systemInstruction,
+  - [x] **M8.0** _Map + decisions_ (no code): API endpoint + payload shape (system→systemInstruction,
         Message list→contents[]) · key from env (user has a key) · stdlib urllib only · transport
         seam (fake-HTTP offline tests, M7.1 pattern) · thinking policy for ReAct (default off,
         amended by reality if needed — M7.0's lesson) · pin CURRENT rate limits from the AI Studio
         rate-limits page (PLAN's planning-era numbers: 15 RPM / 250K TPM / 500 RPD Flash Lite).
+        **Decisions pinned (2026-11-02):**
+        - endpoint `POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`
+        - payload: user's system prompt → `systemInstruction`; Message list → `contents[]`
+          (roles user/assistant; Gemini has no `system` role inside contents); our `<role>` render()
+          prefix is NOT sent — role lives in its own field (the same lesson M7.1 taught for Ollama).
+        - key: **`GEMINI_API_KEY` env var** (user will create+export it before M8.2's live run;
+          never hardcoded, never committed)
+        - default model: **`gemini-3.5-flash-lite`** (free tier, planning-era 15 RPM / 250K TPM / 500 RPD;
+          exact numbers re-pinned from the AI Studio page at M8.2's live probe)
+        - thinking: **off for ReAct** first attempt, amend-by-reality if the API/behaviour disagrees
+        - transport seam reused (fake HTTP in tests); timeout long, retry transient only —
+          429 policy gets its own sub-milestone (M8.3)
+  - stage: M8.0 decisions pinned (generateContent endpoint, systemInstruction split, GEMINI_API_KEY env, flash-lite, thinking off, transport seam)
   - [ ] **M8.1** _GeminiBrain skeleton_ — same seam as M7.1: complete() speaks HTTPS; offline unit
         tests with fake transport; live smoke skips when no key/network.
   - [ ] **M8.2** _First real words_ — narrated live run; rate-limit headers OBSERVED and recorded

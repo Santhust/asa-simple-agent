@@ -148,6 +148,8 @@ class OllamaBrain(Brain):
         self.retry_wait = retry_wait
         self._transport = transport or self._default_transport
         self.call_count = 0  # mirrors MockBrain: same knobs for bench parity (M7.4)
+        self.total_eval_count = 0          # REAL output tokens, summed by Ollama
+        self.total_eval_duration = 0.0     # seconds spent generating (Ollama's clock)
         self.last_payload: dict | None = None  # last request body, for inspection
 
     # -- the seam the tests swap ---------------------------------------------
@@ -215,11 +217,23 @@ class OllamaBrain(Brain):
                 if attempt < attempts and self.retry_wait > 0:
                     time.sleep(self.retry_wait)
                 continue
+            self._note_throughput(body)
             return self._to_completion(body, messages)
         raise OllamaUnavailable(
             f"could not reach Ollama at {self.host} after {attempts} attempt(s) "
             f"({last_err!r}) — is `ollama serve` running, and is the model in "
             f"`ollama list`?") from last_err
+
+    def _note_throughput(self, body: dict) -> None:
+        """Aggregate Ollama's own generation counters across the whole run.
+
+        bench needs tok/s measured by the HARDWARE's clock, not a stopwatch
+        around agent.run (which would include Python overhead). Ollama reports
+        eval_count (generated tokens) and eval_duration (nanoseconds).
+        """
+        if body.get("eval_count") and body.get("eval_duration"):
+            self.total_eval_count += body["eval_count"]
+            self.total_eval_duration += body["eval_duration"] / 1e9
 
     # -- response mapping: Ollama JSON -> Completion --------------------------
     @staticmethod

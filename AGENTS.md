@@ -77,9 +77,11 @@ Learning-paced, never product-paced. Rules that must not be shortcut:
 
 ## Commands
 (CANONICAL — kept true at every close-out)
-- `python run.py --task "..." [--brain mock] [--model TAG] [--max-steps N] [--script "…" …]
-  [--no-tools] [--explain] [--no-color]`   (today's real flags; M6 trace always writes
-  `asa/traces/trace.jsonl` — no `--trace` flag needed)
-- `python bench.py --task "..."`           (planned M7+ — same task across brains, side by side)
+- `python run.py --task "..." [--brain mock|ollama] [--model TAG] [--max-steps N]
+  [--script "…" …] [--no-tools] [--explain] [--no-color]`   (today's real flags;
+  M6 trace always writes `asa/traces/trace.jsonl` — no `--trace` flag needed)
+- `python bench.py --task "..." [--brains mock,ollama] [--max-steps N] [--json]`
+  (real since M7.4 — same task across brains, side by side; ok = PROCEDURAL
+  success, never a truth claim; tok/s from Ollama's own counters when present)
 - `python serve.py`                        (planned M13 — live SSE mode for the playground)
-- `python -m pytest`                       (113 tests; run after every sub-milestone)
+- `python -m pytest`                       (132 tests; run after every sub-milestone)

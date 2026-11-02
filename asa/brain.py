@@ -383,8 +383,15 @@ class GeminiBrain(Brain):
             try:
                 _, body = self._transport(url, payload, self.timeout)
             # The server SPOKE (400 bad model, 403 bad key, 429 too fast,..):
-            # surfacing immediately with code+reason — and NO key material.
+            # 429 can heal with a wait; everything else is final — retrying a
+            # misconfigured request would hide it.
             except urllib.error.HTTPError as e:
+                if e.code == 429 and attempt < attempts and self.retry_wait > 0:
+                    last_err = e
+                    delay = self._retry_after_delay(
+                        getattr(e, "headers", None), self.retry_wait)
+                    time.sleep(delay)
+                    continue
                 raise GeminiUnavailable(
                     f"Gemini answered HTTP {e.code} ({e.reason}) for {self.model!r} "
                     f"— check the model tag, the key's restrictions, and the rate limit") from e
@@ -422,6 +429,24 @@ class GeminiBrain(Brain):
         usage = body.get("usageMetadata") or {}
         if usage.get("candidatesTokenCount"):
             self.total_output_tokens += usage["candidatesTokenCount"]
+
+    @staticmethod
+    def _retry_after_delay(headers, default: float) -> float:
+        """Parse Retry-After seconds from a 429 response's headers.
+
+        The value is either an integer number of seconds or an HTTP date —
+        we handle seconds and fall back to the gentle default otherwise, so
+        a malformed header never poisons the backoff.
+        """
+        if headers is None:
+            return default
+        raw = headers.get("Retry-After")
+        if raw is None:
+            return default
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            return default
 
     def describe(self) -> str:
         return (f"GeminiBrain(model={self.model!r}, host={self.host!r}, "

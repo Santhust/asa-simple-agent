@@ -25,6 +25,8 @@ only the live smoke touches Google, and it SKIPS without GEMINI_API_KEY.
 
 import json as json_lib
 import socket
+import time
+from email.message import Message as EmailMessage
 
 import pytest
 import urllib.error
@@ -177,6 +179,53 @@ def test_unknown_param_is_rejected_not_silently_ignored():
     brain, _ = make_brain([("ok", RESPONSE_BODY)])
     with pytest.raises(ValueError, match="temperature"):
         brain.complete(MESSAGES, temperature=0.2)
+
+
+# -- rate-limit fail-soft ------------------------------------------------------
+
+def test_rate_limit_retries_once_then_raises_rate_limit_guidance():
+    """429 may heal; after retries are spent we raise — naming the problem,
+    never the key."""
+    rate_limited = urllib.error.HTTPError(
+        "https://generativelanguage.googleapis.com/x", 429,
+        "Too Many Requests", EmailMessage(), None)
+    brain, transport = make_brain(
+        [("err", rate_limited)] * 2, retries=1, retry_wait=1.0)
+    with pytest.raises(GeminiUnavailable, match="rate limit"):
+        brain.complete(MESSAGES)
+    assert len(transport.calls) == 2  # exactly retries + 1 attempts
+    for call in transport.calls:
+        assert SECRET not in str(call)  # key never rides in the URL/recorded payload
+
+
+def test_rate_limit_honors_retry_after_header(monkeypatch):
+    """Retry-After seconds are used as the gentle backoff."""
+    headers = EmailMessage()
+    headers["Retry-After"] = "2"
+    rate_limited = urllib.error.HTTPError(
+        "https://generativelanguage.googleapis.com/x", 429,
+        "Too Many Requests", headers, None)
+    brain, transport = make_brain(
+        [("err", rate_limited), ("ok", RESPONSE_BODY)], retries=1,
+        retry_wait=1.0)
+    sleeps = []
+    monkeypatch.setattr(time, "sleep", lambda d: sleeps.append(d))
+    completion = brain.complete(MESSAGES)
+    assert completion.text == "Thought: done\nFinal Answer: three"
+    assert sleeps == [2.0]                 # obeyed Retry-After: 2 seconds
+    assert len(transport.calls) == 2       # one retry, then success
+
+
+def test_other_http_errors_still_raise_immediately():
+    """A 403 is not rate-limited; retrying it cannot heal a bad key."""
+    forbidden = urllib.error.HTTPError(
+        "https://generativelanguage.googleapis.com/x", 403, "Forbidden",
+        EmailMessage(), None)
+    brain, transport = make_brain([("err", forbidden)], retries=3)
+    with pytest.raises(GeminiUnavailable, match="HTTP 403"):
+        brain.complete(MESSAGES)
+    assert len(transport.calls) == 1       # NO retry: the server spoke
+
 
 
 # -- live smoke (real key, real Google, tiny; SKIPS when the key is absent) ----

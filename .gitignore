@@ -13,3 +13,14 @@ NOTES.md
 out/
 # runtime trace output (M6): written every run, regenerable
 asa/traces/
+
+# Agent / editor tooling — never pushed
+# (a .kilo/plans file reached history once; keep the whole family out)
+.kilo/
+.opencode/
+.claude/
+.cursor/
+.aider*
+.idea/
+.vscode/
+.DS_Store
